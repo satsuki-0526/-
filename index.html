@@ -1,0 +1,2497 @@
+<!doctype html><html lang="ja"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
+<title>手帳家計簿</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<style>
+  /* Layout: 一画面完結のノート。上に見出し、中央が罫線入りのページ(スクロール)、下に6つの付箋タブ。記録の入力は下から出る書き込みシート。 */
+  :root {
+    --paper: #F7F0E0;
+    --paper-deep: #EDE1C8;
+    --card: #FFFBF2;
+    --ink: #4B3B2D;
+    --ink-soft: #7C664F;
+    --line: #E1D2B6;
+    --rule: #EBE0CA;
+    --margin: #EBC3B8;
+    --income: #4F7042;
+    --spend: #A4543F;
+    --plan: #4C6D83;
+    --warn: #A8730F;
+    --over: #A93A2B;
+    --note-yellow: #F5E3A3;
+    --note-pink: #F3D3C8;
+    --note-green: #D4E1C4;
+    --note-blue: #D1E0E6;
+    --tape: rgba(212, 178, 134, .6);
+    --btn: #7A5A3F;
+    --btn-ink: #FFF8EA;
+    --scrim: rgba(60, 44, 30, .5);
+    --shadow: 0 1px 0 rgba(75, 59, 45, .08), 0 8px 14px -10px rgba(75, 59, 45, .45);
+    --font-display: "Klee One", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+    --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+    --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4; --c-other: #9C8F7C;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #241E18; --paper-deep: #3A3027; --card: #332A21; --ink: #F1E6D3; --ink-soft: #C2AE96;
+      --line: #4A3E31; --rule: #2E261F; --margin: #6B4A41;
+      --income: #A5CC94; --spend: #EFA390; --plan: #9CC0D5; --warn: #E7B866; --over: #F28D7E;
+      --note-yellow: #5B4F2B; --note-pink: #5F3C34; --note-green: #3C4B34; --note-blue: #35454F;
+      --tape: rgba(160, 130, 90, .5); --btn: #D2A57A; --btn-ink: #2A1F15; --scrim: rgba(0, 0, 0, .6);
+      --shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 8px 14px -10px rgba(0, 0, 0, .7);
+      --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c-other: #9A8B76;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #241E18; --paper-deep: #3A3027; --card: #332A21; --ink: #F1E6D3; --ink-soft: #C2AE96;
+    --line: #4A3E31; --rule: #2E261F; --margin: #6B4A41;
+    --income: #A5CC94; --spend: #EFA390; --plan: #9CC0D5; --warn: #E7B866; --over: #F28D7E;
+    --note-yellow: #5B4F2B; --note-pink: #5F3C34; --note-green: #3C4B34; --note-blue: #35454F;
+    --tape: rgba(160, 130, 90, .5); --btn: #D2A57A; --btn-ink: #2A1F15; --scrim: rgba(0, 0, 0, .6);
+    --shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 8px 14px -10px rgba(0, 0, 0, .7);
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c-other: #9A8B76;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background-color: var(--paper);
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, var(--rule) 31px, var(--rule) 32px);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+    display: flex;
+    justify-content: center;
+    -webkit-text-size-adjust: 100%;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--plan); outline-offset: 2px; }
+
+  .app { width: 100%; max-width: 480px; height: 100%; display: flex; flex-direction: column; position: relative; }
+  .app::before { content: ""; position: absolute; top: 0; bottom: 0; left: -8px; width: 2px; background: var(--margin); opacity: .8; }
+
+  .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 14px 2px 10px; }
+  .eyebrow { margin: 0; font-size: 12px; letter-spacing: .12em; color: var(--ink-soft); }
+  h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 1.2; text-wrap: balance; }
+  #banner:empty { display: none; }
+  #banner { padding: 2px 2px 8px; }
+
+  main { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 4px 24px; margin-inline: -4px; }
+  .screen { display: flex; flex-direction: column; gap: 18px; }
+
+  h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 1.3; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .sub { color: var(--ink-soft); font-size: 13px; }
+
+  .num { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -.01em; }
+  .unit { font-size: .55em; font-weight: 500; margin-left: 2px; }
+  .big { font-size: clamp(38px, 12vw, 50px); line-height: 1.1; }
+  .mid { font-size: 22px; line-height: 1.2; }
+
+  .card { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+  .note { position: relative; border-radius: 4px 4px 12px 4px; padding: 14px 14px 16px; box-shadow: var(--shadow); color: var(--ink); }
+  .note.y { background: var(--note-yellow); transform: rotate(-.6deg); }
+  .note.g { background: var(--note-green); transform: rotate(.5deg); }
+  .note.p { background: var(--note-pink); transform: rotate(-.4deg); }
+  .note.b { background: var(--note-blue); transform: rotate(.6deg); }
+  .taped::before { content: ""; position: absolute; top: -9px; left: 50%; width: 60px; height: 16px; background: var(--tape); transform: translateX(-50%) rotate(-3deg); border-radius: 2px; }
+  .label { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: .04em; }
+
+  .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .trio .note { padding: 12px 10px 14px; }
+  .trio .num { font-size: 19px; display: block; margin-top: 2px; }
+
+  .formula { margin: 12px 0 0; padding: 12px 0 0; border-top: 2px dashed var(--line); display: grid; gap: 2px; font-size: 14px; }
+  .formula div { display: flex; justify-content: space-between; gap: 8px; }
+  .formula .num { font-weight: 500; }
+  .formula .hint { color: var(--ink-soft); font-size: 12px; margin-top: 6px; }
+
+  .list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+  .list > li { border-top: 1px solid var(--line); }
+  .list > li:first-child { border-top: 0; }
+  .row { display: grid; grid-template-columns: 62px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 56px; padding: 8px 0; width: 100%; text-align: left; background: none; border: 0; cursor: pointer; }
+  .row .d { font-size: 12px; color: var(--ink-soft); line-height: 1.3; }
+  .row .t { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+  .row .t b { flex-basis: 100%; font-weight: 500; overflow-wrap: anywhere; }
+  .row .amt { font-size: 17px; text-align: right; }
+  .row .amt.in { color: var(--income); }
+  .row .amt.out { color: var(--spend); }
+  .chip { display: inline-flex; align-items: center; min-height: 20px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 500; background: var(--paper-deep); color: var(--ink); white-space: nowrap; }
+  .chip.plan { background: var(--note-blue); }
+  .chip.warn { background: var(--note-yellow); }
+  .chip.over { background: var(--note-pink); }
+  .chip.ok { background: var(--note-green); }
+
+  .tips { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .tips li { padding-left: 22px; position: relative; }
+  .tips li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink-soft); }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 14px; background: var(--paper-deep); }
+  .seg.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .seg button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; font-weight: 500; cursor: pointer; }
+  .seg button[aria-selected="true"], .seg button[aria-pressed="true"] { background: var(--card); box-shadow: var(--shadow); font-weight: 700; }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; padding: 0 18px; border: 0; border-radius: 14px; background: var(--btn); color: var(--btn-ink); font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: var(--shadow); }
+  .btn.ghost { min-height: 48px; background: transparent; color: var(--ink); border: 1.5px solid var(--ink-soft); box-shadow: none; font-size: 15px; }
+  .btn.danger { color: var(--over); border-color: var(--over); }
+  .btn.small { width: auto; min-height: 44px; font-size: 14px; padding: 0 16px; }
+
+  .month { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .month h2 { text-align: center; flex: 1; }
+  .month button { min-width: 52px; min-height: 44px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); font-size: 18px; cursor: pointer; }
+
+  .empty { text-align: center; padding: 26px 16px; border: 2px dashed var(--line); border-radius: 14px; color: var(--ink-soft); display: grid; gap: 14px; justify-items: center; }
+  .empty p { margin: 0; }
+
+  .plan-item { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .plan-item:first-child { border-top: 0; padding-top: 0; }
+  .plan-item:last-child { padding-bottom: 0; }
+  .plan-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .plan-head b { font-weight: 500; overflow-wrap: anywhere; }
+  .plan-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; color: var(--ink-soft); }
+  .plan-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .memo { margin: 0; font-size: 13px; color: var(--ink-soft); overflow-wrap: anywhere; }
+  details.card summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-family: var(--font-display); font-weight: 600; }
+  details.card[open] summary { margin-bottom: 8px; }
+
+  .track { height: 12px; border-radius: 8px; background: var(--paper-deep); overflow: hidden; }
+  .fill { height: 100%; border-radius: 8px; background: var(--plan); }
+  .bar-row { display: grid; gap: 4px; padding: 8px 0; }
+  .bar-row .line1 { display: flex; justify-content: space-between; gap: 8px; }
+
+  .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 10px 0; }
+  .set-row b { display: block; font-weight: 500; }
+  .set-row small { color: var(--ink-soft); font-size: 12px; line-height: 1.4; display: block; }
+  .plain { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 14px; }
+
+  .tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 6px; margin: 6px 0 8px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+  .tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 58px; border: 0; border-radius: 14px; background: transparent; color: var(--ink-soft); font-size: 11px; font-weight: 500; cursor: pointer; }
+  .tabs button svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tabs button[aria-current="page"] { background: var(--note-yellow); color: var(--ink); font-weight: 700; }
+
+  /* hidden のものは、どんな環境でも必ず隠す */
+  [hidden] { display: none !important; }
+
+  /* 書き込みシート */
+  .sheet-wrap { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { position: relative; width: 100%; max-width: 480px; max-height: 94%; overflow-y: auto; overscroll-behavior: contain; background: var(--card); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; padding-top: 22px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; }
+  .sheet::before { content: ""; position: absolute; top: 8px; left: 50%; width: 44px; height: 5px; border-radius: 3px; background: var(--line); transform: translateX(-50%); }
+  .field { display: grid; gap: 6px; }
+  .field > label, .field > .lab { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+  .field input, .field select, .field textarea { width: 100%; min-height: 50px; padding: 10px 12px; font-size: 16px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px; }
+  .field textarea { min-height: 84px; resize: vertical; line-height: 1.5; }
+  .field select { -webkit-appearance: none; appearance: none; padding-right: 38px; background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
+  .field input.amount-input { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; min-height: 60px; }
+  .field input[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--over); }
+  .amt-preview { min-height: 1.4em; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .err { color: var(--over); font-size: 13px; font-weight: 500; }
+  .err:empty { display: none; }
+  .actions { display: grid; gap: 10px; margin-top: 4px; }
+
+  .amt-row { display: flex; gap: 8px; align-items: stretch; }
+  .amt-row input { flex: 1; min-width: 0; }
+  .amt-row .calc-open { width: auto; flex: none; min-height: 60px; padding: 0 16px; font-size: 15px; }
+  .calc-display { background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 14px 12px; text-align: right; }
+  .calc-expr { min-height: 1.6em; font-size: 15px; color: var(--ink-soft); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .calc-result { font-size: 34px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .keys { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .key { min-height: 58px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--paper); font-size: 22px; font-weight: 500; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .key.op { background: var(--note-yellow); }
+  .key.fn { background: var(--paper-deep); font-size: 18px; }
+  .key.eq { grid-row: span 2; background: var(--btn); color: var(--btn-ink); border-color: transparent; font-weight: 700; }
+  .cat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 56px; padding: 8px 0; border: 0; background: none; text-align: left; cursor: pointer; }
+  .cat-row b { display: block; font-weight: 500; overflow-wrap: anywhere; }
+  .cat-row small { color: var(--ink-soft); font-size: 12px; }
+  .cat-row .chev { color: var(--ink-soft); font-size: 22px; }
+  #f-copy { font-family: ui-monospace, Menlo, monospace; font-size: 13px; min-height: 180px; }
+  #f-text { font-size: 14px; min-height: 120px; }
+  .field input[type="file"] { min-height: 52px; padding: 12px; font-size: 15px; }
+  .budget { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .budget:first-child { border-top: 0; padding-top: 0; }
+  .budget-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .budget-top .name { font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+  .budget .fill { background: var(--income); }
+  .budget .fill.near { background: var(--warn); }
+  .budget .fill.over { background: var(--over); }
+  .budget-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+  .budget-meta .num { font-weight: 500; color: var(--ink); }
+  .kv { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .kv:first-child { border-top: 0; }
+  .kv > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .amt-row select { flex: 1; min-width: 0; }
+  .cat-row small { display: block; }
+  /* 分析(円グラフ・棒グラフ) */
+  .an-expense { --kind: var(--spend); }
+  .an-income { --kind: var(--income); }
+  .an-plan { --kind: var(--plan); }
+  .presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .presets button { min-height: 44px; padding: 0 4px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); font-size: 13px; font-weight: 500; cursor: pointer; }
+  .presets button[aria-pressed="true"] { background: var(--note-yellow); border-color: transparent; font-weight: 700; }
+  .range-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .range-fields input { min-width: 0; font-size: 16px; }
+  .donut { position: relative; width: min(100%, 220px); aspect-ratio: 1; margin: 4px auto 10px; }
+  .donut svg { display: block; width: 100%; height: 100%; }
+  .donut-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0 27%; text-align: center; pointer-events: none; }
+  .dc-l { max-width: 100%; font-size: 12px; line-height: 1.3; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .dc-n { font-size: clamp(15px, 5vw, 19px); line-height: 1.2; overflow-wrap: anywhere; }
+  .an-row { display: grid; gap: 8px; width: 100%; min-height: 52px; padding: 10px 8px; border: 0; border-radius: 10px; background: none; text-align: left; cursor: pointer; }
+  .an-row[aria-pressed="true"] { background: var(--paper-deep); }
+  .an-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .an-line .dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--dot); }
+  .an-line .nm { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+  .an-line .ct { margin-left: 6px; font-size: 11px; font-weight: 400; color: var(--ink-soft); white-space: nowrap; }
+  .an-line .num { flex: none; font-size: 16px; white-space: nowrap; }
+  .an-line .pc { flex: none; min-width: 3em; text-align: right; font-size: 12px; color: var(--ink-soft); }
+  .an-row .track { display: block; }
+  .an-row .fill { display: block; background: var(--dot); }
+  .cols { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .col { display: grid; grid-template-rows: 16px 100px auto; justify-items: center; gap: 2px; width: 100%; min-height: 44px; padding: 6px 0 8px; border: 0; border-radius: 10px; background: none; cursor: pointer; }
+  .col[aria-pressed="true"] { background: var(--paper-deep); }
+  .col .cv { font-size: 11px; font-weight: 700; line-height: 16px; white-space: nowrap; }
+  .col .well { display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 100px; border-bottom: 1px solid var(--line); }
+  .col .bar { display: block; width: min(24px, 70%); border-radius: 4px 4px 0 0; background: var(--kind); opacity: .36; }
+  .col[data-in="1"] .bar { opacity: 1; }
+  .col .mo { font-size: 11px; color: var(--ink-soft); }
+  .tbl summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 13px; color: var(--ink-soft); }
+  .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); transform: translateX(-50%); max-width: min(92vw, 420px); padding: 12px 16px; border-radius: 12px; background: var(--ink); color: var(--paper); font-size: 14px; text-align: center; box-shadow: var(--shadow); z-index: 30; }
+  /* 手帳(月間カレンダーと日付のメモ) */
+  .cal-card { margin-top: 8px; padding: 22px 6px 10px; }
+  .cal-card::before { content: ""; position: absolute; top: -8px; left: 18px; right: 18px; height: 16px; pointer-events: none; background: radial-gradient(circle at 50% 50%, var(--paper) 0 4.5px, var(--ink-soft) 4.5px 6px, transparent 6.5px) 0 0 / 24px 16px; background-repeat: space no-repeat; }
+  .cal-card .month { padding: 0 8px; }
+  .cal-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 10px 8px 8px; text-align: center; }
+  .cal-sum > div > span:first-child { display: block; font-size: 11px; color: var(--ink-soft); }
+  .cal-sum .num { font-size: 15px; }
+  .cal-wk { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; font-size: 12px; color: var(--ink-soft); padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .cal-blank, .cal-day { min-height: 78px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .cal-grid > :nth-child(7n) { border-right: 0; }
+  .cal-day { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 1px; min-width: 0; padding: 3px 2px 4px; border-top: 0; border-left: 0; background: none; text-align: right; font-size: 10.5px; line-height: 1.3; cursor: pointer; }
+  .cd-n { align-self: flex-start; display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; border-radius: 11px; font-size: 13px; font-weight: 700; line-height: 1; }
+  .cal-day.today .cd-n { border: 1.5px solid var(--ink); }
+  .cal-day[aria-pressed="true"] { background: var(--note-yellow); box-shadow: inset 0 0 0 2px var(--ink-soft); }
+  .cd-v { display: block; white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cd-v.out { color: var(--spend); }
+  .cd-v.in { color: var(--income); }
+  .cd-v.pl { color: var(--plan); background: var(--note-blue); border: 1px dashed var(--plan); border-radius: 4px; font-size: 10px; letter-spacing: -.03em; padding: 0 1px; }
+  .cd-v i { font-style: normal; font-weight: 500; font-size: 8.5px; margin-right: 0; }
+  .cal-day.has-note::after { content: ""; position: absolute; top: 0; right: 0; width: 0; height: 0; border-top: 13px solid var(--warn); border-left: 13px solid transparent; }
+  .cal-legend { margin: 8px 8px 0; font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+  .cal-legend b { font-weight: 700; }
+  .cal-legend .out { color: var(--spend); } .cal-legend .in { color: var(--income); } .cal-legend .pl { color: var(--plan); }
+  .day-panel { display: grid; gap: 14px; }
+  .day-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+  .day-head h2 { font-size: 22px; }
+  .day-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px 0; text-align: center; border-top: 2px dashed var(--line); border-bottom: 2px dashed var(--line); }
+  .day-sum > div > span:first-child { display: block; font-size: 12px; color: var(--ink-soft); }
+  .day-sum .num { font-size: 19px; }
+  .day-sum .o .num { color: var(--spend); } .day-sum .i .num { color: var(--income); } .day-sum .p .num { color: var(--plan); }
+  .day-panel h3 { margin: 0 0 2px; font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+  .day-panel .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .row .amt.pl { color: var(--plan); }
+  .row.plan-row { padding-left: 8px; border-left: 3px dashed var(--plan); }
+  .rmemo { grid-column: 1 / -1; padding: 4px 8px; border-radius: 3px 3px 8px 3px; background: var(--note-yellow); color: var(--ink); font-size: 13px; white-space: pre-line; overflow-wrap: anywhere; }
+  .note.flat { transform: none; }
+  .daymemo { display: grid; gap: 8px; padding: 12px 12px 10px; }
+  .note-pad { display: block; width: 100%; min-height: 150px; padding: 0 10px; font-size: 16px; line-height: 30px; color: var(--ink); background-color: var(--card); background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 29px, var(--line) 29px, var(--line) 30px); background-attachment: local; border: 1.5px solid var(--line); border-radius: 10px; resize: vertical; }
+  .memo-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ink); }
+  .day-hint { margin: 0; font-size: 12px; color: var(--ink-soft); }
+  .cal-tools { display: flex; justify-content: flex-end; padding: 8px 8px 0; }
+  .month h2 small.prange { display: block; font-family: var(--font-body); font-size: 12px; font-weight: 400; line-height: 1.3; color: var(--ink-soft); }
+  .cd-n { padding: 0 3px; }
+  @media (max-width: 359px) {
+    .cal-card { padding-left: 2px; padding-right: 2px; }
+    .cal-day { font-size: 9px; padding-left: 1px; padding-right: 1px; }
+    .cd-v i { font-size: 8px; margin-right: 0; }
+  }
+  /* 節約のヒント */
+  .tip { padding: 12px 0; border-top: 1px solid var(--line); }
+  .tip:first-child { border-top: 0; padding-top: 0; }
+  .tip h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+  .tip p { margin: 0 0 6px; font-size: 14px; overflow-wrap: anywhere; }
+  .tip .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px; }
+  .tip .calc { margin: 6px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--paper-deep); font-size: 13px; display: grid; gap: 2px; }
+  .tip .save { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
+  .report { white-space: pre-line; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+  .chipwrap { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chipbtn { min-height: 44px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); font-size: 14px; cursor: pointer; }
+  .chipbtn[aria-pressed="true"] { background: var(--note-pink); border-color: transparent; font-weight: 700; }
+  .chg { font-variant-numeric: tabular-nums; font-weight: 700; }
+  /* 予定と実際の比較 */
+  .df { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .df.good { color: var(--income); }
+  .df.bad { color: var(--over); }
+  .cmp-r { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 6px; align-items: baseline; padding: 9px 4px; border-top: 1px solid var(--line); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+  .cmp-r > :first-child { text-align: left; font-weight: 500; overflow-wrap: anywhere; }
+  .cmp-r.h { border-top: 0; padding-bottom: 4px; font-size: 11px; color: var(--ink-soft); border-bottom: 2px solid var(--line); }
+  .cmp-r.on { background: var(--paper-deep); border-radius: 8px; }
+  .cmp-sub { display: block; font-size: 11px; font-weight: 400; color: var(--ink-soft); }
+  .cmp-x { text-decoration: line-through; color: var(--ink-soft) !important; }
+  .row .amt { min-width: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .tabs button, .seg button { transition: background-color .15s; }
+  }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div>
+      <p class="eyebrow" id="monthLabel"></p>
+      <h1 id="screenTitle">ホーム</h1>
+    </div>
+  </header>
+  <div id="banner" aria-live="polite"></div>
+
+  <main id="main">
+    <section class="screen" id="screen-home" aria-labelledby="screenTitle"></section>
+    <section class="screen" id="screen-records" hidden></section>
+    <section class="screen" id="screen-calendar" hidden></section>
+    <section class="screen" id="screen-plans" hidden></section>
+    <section class="screen" id="screen-analysis" hidden></section>
+    <section class="screen" id="screen-settings" hidden></section>
+  </main>
+
+  <nav class="tabs" aria-label="画面の切り替え">
+    <button type="button" data-action="tab" data-tab="home" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5"/><path d="M6 10.5V19h12v-8.5"/><path d="M10 19v-5h4v5"/></svg>ホーム
+    </button>
+    <button type="button" data-action="tab" data-tab="records">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l1-4L16.5 4.5a2 2 0 0 1 3 3L9 18z"/><path d="M5 19l4-1"/></svg>記録
+    </button>
+    <button type="button" data-action="tab" data-tab="calendar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5v17M12 8h4M12 12h4"/></svg>手帳
+    </button>
+    <button type="button" data-action="tab" data-tab="plans">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>予定
+    </button>
+    <button type="button" data-action="tab" data-tab="analysis">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>分析
+    </button>
+    <button type="button" data-action="tab" data-tab="settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M18 6l-1.6 1.6M7.6 16.4 6 18"/></svg>設定
+    </button>
+  </nav>
+</div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+  /* ============ データの形 ============
+     state = { version: 1, categories: [{id, name, kind}], records: [...] }
+     records の type は 'expense'(使った) / 'income'(収入) / 'plan'(予定)
+     記録にはカテゴリーの id と、その時点の名前(catName)を両方残します。
+     予定を支払うと、予定 (status:'paid', expenseId) と、使った記録 (fromPlanId) がつながります。
+     予定の status: 'unpaid'(未払い) / 'considering'(検討中) / 'paid'(支払い済み) / 'cancelled'(取り消し)。取り消した予定は、どの集計にも入りません。 */
+  var KEY = 'kakeibo.v1';
+  var EXPENSE_CATS = ['食費', '日用品', '交通費', '交際費', '推し活', '漫画・書籍', 'ライブ・イベント', '美容', '趣味', '固定費', 'その他'];
+  var INCOME_CATS = ['アルバイト代', '臨時収入', 'その他'];
+  var WEEK = ['日', '月', '火', '水', '木', '金', '土'];
+  var MAX_AMOUNT = 99999999;
+  var NOTE_MAX = 1000;
+  var storageOK = true, loadProblem = false, recovered = false, persistAsked = false, saveBusy = false;
+
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmt(n) { return Math.abs(n).toLocaleString('ja-JP'); }
+  function yen(n, cls) { return '<span class="num ' + (cls || '') + '">' + (n < 0 ? '−' : '') + fmt(n) + '<span class="unit">円</span></span>'; }
+  function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function todayStr() { var t = new Date(); return t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate()); }
+  function validDate(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s || '')) return false;
+    var p = s.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
+    return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
+  }
+  function dlabel(s) {
+    var p = s.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
+    var y = p[0] !== new Date().getFullYear() ? p[0] + '/' : '';
+    return y + p[1] + '/' + p[2] + '（' + WEEK[d.getDay()] + '）';
+  }
+  function parseAmount(s) {
+    var t = String(s || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[^\d]/g, '');
+    return t ? Number(t) : NaN;
+  }
+
+  /* ============ 保存と読み込み ============ */
+  function freshState() {
+    var cats = [];
+    EXPENSE_CATS.forEach(function (n, i) { cats.push({ id: 'x' + (i + 1), name: n, kind: 'expense' }); });
+    INCOME_CATS.forEach(function (n, i) { cats.push({ id: 'i' + (i + 1), name: n, kind: 'income' }); });
+    return { version: 1, categories: cats, records: [], fixed: [], budgets: [], notes: {}, settings: { periodStart: 15 } };
+  }
+  function load() {
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { storageOK = false; return freshState(); }
+    if (!raw) return freshState();
+    try {
+      var d = JSON.parse(raw);
+      if (!d || d.version !== 1 || !Array.isArray(d.records) || !Array.isArray(d.categories)) throw new Error('bad');
+      return d;
+    } catch (e) {
+      try { localStorage.setItem(KEY + '.broken', raw); } catch (e2) {}
+      try {
+        var pr = localStorage.getItem(KEY + '.prev');
+        var pd = pr ? JSON.parse(pr) : null;
+        if (pd && pd.version === 1 && Array.isArray(pd.records) && Array.isArray(pd.categories)) { recovered = true; return pd; }
+      } catch (e3) {}
+      loadProblem = true;
+      return freshState();
+    }
+  }
+  function save() {
+    try {
+      var next = JSON.stringify(state), cur = localStorage.getItem(KEY);
+      if (cur && cur !== next) {
+        try { var cj = JSON.parse(cur); if (cj && cj.version === 1 && Array.isArray(cj.records)) localStorage.setItem(KEY + '.prev', cur); } catch (e0) {}
+      }
+      localStorage.setItem(KEY, next);
+      storageOK = true;
+      if (!persistAsked) {
+        persistAsked = true;
+        try { var p = navigator.storage && navigator.storage.persist && navigator.storage.persist(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+      }
+    } catch (e) { storageOK = false; }
+  }
+  var state = normalizeState(load());
+  var ui = { tab: 'home', kind: 'expense', catKind: 'expense', ym: null, sheet: null, opener: null };
+  (function () { var p = periodOf(todayStr()); ui.ym = { y: p.y, m: p.m }; ui.budgetYm = { y: p.y, m: p.m }; ui.an = { mode: 'month', y: p.y, m: p.m, from: '', to: '', kind: 'expense', sel: null, bar: null, view: 'stats' }; ui.cal = { y: p.y, m: p.m, sel: todayStr() }; })();
+
+  /* ============ 集計(画面とは独立した計算) ============ */
+  function findRec(id) { for (var i = 0; i < state.records.length; i++) if (state.records[i].id === id) return state.records[i]; return null; }
+  function recSort(a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.createdAt || 0) - (a.createdAt || 0); }
+  function sumOf(list) { return list.reduce(function (a, r) { return a + r.amount; }, 0); }
+  function ymKey(y, m) { return y + '-' + pad(m); }
+
+  /* ============ 集計の期間(給料日基準) ============
+     1か月は「開始日(初期は15日)から、翌月の前の日まで」です。開始日が15なら、10月分は 10/15〜11/14。
+     期間の名前は、はじまりの月で呼びます。開始日が1なら、ふつうの月(1日〜月末)と同じです。
+     記録に入っているのは日付と金額だけで、どの期間に入るかは、表示するときに日付から計算します。
+     だから開始日を変えても、入力した記録そのものは変わりません。 */
+  function startDay() {
+    var d = state.settings && state.settings.periodStart;
+    return (typeof d === 'number' && Math.floor(d) === d && d >= 1 && d <= 28) ? d : 15;
+  }
+  function periodRange(y, m) {
+    var s = startDay();
+    if (s === 1) return { from: ymKey(y, m) + '-01', to: lastDayStr(y, m) };
+    var ny = m === 12 ? y + 1 : y, nm = m === 12 ? 1 : m + 1;
+    return { from: ymKey(y, m) + '-' + pad(s), to: ymKey(ny, nm) + '-' + pad(s - 1) };
+  }
+  function periodOf(date) {
+    var y = Number(date.slice(0, 4)), m = Number(date.slice(5, 7)), d = Number(date.slice(8, 10));
+    if (d >= startDay()) return { y: y, m: m };
+    return m === 1 ? { y: y - 1, m: 12 } : { y: y, m: m - 1 };
+  }
+  function periodShift(p, n) { var t = p.y * 12 + (p.m - 1) + n; return { y: Math.floor(t / 12), m: ((t % 12) + 12) % 12 + 1 }; }
+  function jpMD(str) { return Number(str.slice(5, 7)) + '/' + Number(str.slice(8, 10)); }
+  function rangeText(r) { return jpMD(r.from) + '〜' + jpMD(r.to); }
+  function periodLabel(y, m) { return y + '年' + m + '月分'; }
+  function periodHead(y, m) { return periodLabel(y, m) + '<small class="prange">' + rangeText(periodRange(y, m)) + '</small>'; }
+  function datesBetween(from, to) {
+    var out = [], d = from, n = 0;
+    while (d <= to && n < 400) { out.push(d); d = addDays(d, 1); n++; }
+    return out;
+  }
+  function periodCardHtml() {
+    var s = startDay(), cp = periodOf(todayStr()), opts = '', i;
+    for (i = 1; i <= 28; i++) opts += opt(i, i === 1 ? '1日（ふつうの月：1日〜月末）' : i + '日（翌月' + (i - 1) + '日まで）', s);
+    return '<div class="card"><div class="sec-head"><h2>集計の期間</h2><span class="sub">給料日に合わせる</span></div>' +
+      '<div class="field"><label for="f-pstart">1か月のはじまりの日</label><select id="f-pstart" data-setting="periodStart">' + opts + '</select></div>' +
+      '<p class="sub" style="margin:10px 0 0">今は、毎月' + s + '日から' + (s === 1 ? '月末' : '翌月' + (s - 1) + '日') + 'までを1か月として数えています。今の期間は<b>' + cp.m + '月分（' + rangeText(periodRange(cp.y, cp.m)) + '）</b>です。</p>' +
+      '<p class="sub" style="margin:6px 0 0">あとから変えても、入力した記録の日付や金額は変わりません。どの月分に入るかの区切りだけが変わります。予算は「○月分」ごとのまま残ります。</p></div>';
+  }
+  // 画面が見ている期間を、「今の期間」にそろえる(開始日を変えた・復元したあと用)
+  function resetPeriodUi() {
+    var cp = periodOf(todayStr());
+    ui.ym = { y: cp.y, m: cp.m }; ui.budgetYm = { y: cp.y, m: cp.m };
+    ui.an.y = cp.y; ui.an.m = cp.m; ui.an.sel = null; ui.an.bar = null;
+    ui.cal = { y: cp.y, m: cp.m, sel: todayStr() };
+  }
+  function applyPeriodStart(n) {
+    if (!(n >= 1 && n <= 28) || Math.floor(n) !== n) return;
+    state.settings.periodStart = n;
+    resetPeriodUi();
+    save(); render();
+    var el = $('f-pstart'); if (el && el.focus) el.focus();
+    toast(storageOK ? '集計の開始日を毎月' + n + '日にしました。記録は変わっていません' : '変更しましたが、保存できていません');
+  }
+  function ofType(type, y, m) {
+    var pr = m == null ? null : periodRange(y, m);   // 月ではなく「期間」で選ぶ
+    return state.records.filter(function (r) { return r.type === type && (!pr || (r.date >= pr.from && r.date <= pr.to)); });
+  }
+  function isOpenPlan(r) { return r.type === 'plan' && r.status !== 'paid' && r.status !== 'cancelled'; }   // まだ払っていない、生きている予定
+  function openPlans() { return state.records.filter(isOpenPlan); }
+  function stats(y, m) {
+    var end = periodRange(y, m).to;
+    var inc = sumOf(ofType('income', y, m)), spent = sumOf(ofType('expense', y, m));
+    var planned = sumOf(openPlans().filter(function (p) { return p.date <= end; }));
+    return { income: inc, spent: spent, planned: planned, balance: inc - spent, free: inc - spent - planned };
+  }
+  function catTotals(y, m) {
+    var map = {};
+    ofType('expense', y, m).forEach(function (r) { map[r.catName] = (map[r.catName] || 0) + r.amount; });
+    return Object.keys(map).map(function (k) { return { cat: k, amount: map[k] }; }).sort(function (a, b) { return b.amount - a.amount; });
+  }
+
+  /* ============ 記録の追加・変更・削除 ============ */
+  function catById(id) { for (var i = 0; i < state.categories.length; i++) if (state.categories[i].id === id) return state.categories[i]; return null; }
+  function kindOf(type) { return type === 'income' ? 'income' : 'expense'; }
+  function firstCat(type) { var l = state.categories.filter(function (c) { return c.kind === kindOf(type); }); return l.length ? l[0].id : ''; }
+
+  function applyDraft(rec, d, amt) {
+    var c = catById(d.catId);
+    rec.amount = amt; rec.date = d.date; rec.catId = d.catId;
+    rec.catName = c ? c.name : (d.catName || 'その他');
+    rec.name = d.name.trim(); rec.memo = d.memo.trim();
+    if (rec.type === 'plan') { rec.dateKind = d.dateKind; if (rec.status !== 'paid') rec.status = d.status; }
+  }
+  function addRecord(d, amt) {
+    var rec = { id: newId(), createdAt: Date.now(), type: d.type };
+    if (d.type === 'plan') rec.status = d.status;
+    applyDraft(rec, d, amt);
+    state.records.push(rec);
+    return rec;
+  }
+  function convertPlan(planId, d, amt) {
+    var plan = findRec(planId);
+    if (!plan || !isOpenPlan(plan)) return null; // 二重に記録しない(支払い済み・取り消しの予定は変換しない)
+    var exp = { id: newId(), createdAt: Date.now(), type: 'expense', amount: amt, date: d.date, catId: plan.catId, catName: plan.catName, name: plan.name, memo: d.memo.trim(), fromPlanId: plan.id };
+    if (plan.fixedId) exp.fixedId = plan.fixedId;
+    state.records.push(exp);
+    plan.status = 'paid'; plan.expenseId = exp.id; plan.paidDate = d.date;
+    return exp;
+  }
+  function deleteRecord(id) {
+    var r = findRec(id);
+    if (!r) return;
+    if (r.type === 'expense' && r.fromPlanId) {
+      var p = findRec(r.fromPlanId);
+      if (p) { p.status = 'unpaid'; delete p.expenseId; delete p.paidDate; }
+    }
+    if (r.type === 'plan' && r.expenseId) {
+      var e = findRec(r.expenseId);
+      if (e) delete e.fromPlanId;
+    }
+    state.records = state.records.filter(function (x) { return x.id !== id; });
+  }
+
+  /* ============ 画面の表示 ============ */
+  function rowHtml(r) {
+    var cls = r.type === 'income' ? 'in' : 'out';
+    return '<li><button type="button" class="row" data-action="edit" data-id="' + r.id + '"><span class="d">' + dlabel(r.date) + '</span>' +
+      '<span class="t"><b>' + esc(r.name || r.catName) + '</b><span class="chip">' + esc(r.catName) + '</span>' + (r.fromPlanId ? '<span class="chip plan">予定から</span>' : '') + (r.fixedId ? '<span class="chip">固定費</span>' : '') + '</span>' +
+      '<span class="amt ' + cls + '">' + (r.type === 'income' ? '+' : '') + yen(r.amount) + '</span></button></li>';
+  }
+  function emptyHtml(text, btnLabel, type) {
+    return '<div class="empty"><p>' + text + '</p>' + (btnLabel ? '<button type="button" class="btn small" data-action="add" data-type="' + type + '">' + btnLabel + '</button>' : '') + '</div>';
+  }
+
+  /* ============ 固定費と予算 ============
+     固定費: 「きまり」から、日が近づくと「予定」(plan)を自動で作ります。
+       実際に払ったら、予定を「支払い済み」にして、使ったお金に記録します(予定と実際は別の記録)。
+       予定には fixedId と occ(予定の日)がつき、同じ日の予定は二度作りません。
+       genThrough は「ここまでは予定を作った」という印で、消した予定が作り直されないようにします。
+     予算: { ym, total, cats } を月ごとに持ち、その月以降は、次の設定まで続きます。 */
+  var MONTH_MAX = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  function normalizeState(st) {
+    if (!Array.isArray(st.fixed)) st.fixed = [];
+    if (!Array.isArray(st.budgets)) st.budgets = [];
+    if (!st.notes || typeof st.notes !== 'object' || Array.isArray(st.notes)) st.notes = {};   // 日付ごとのメモ { '2026-10-16': '文章' }
+    if (!st.settings || typeof st.settings !== 'object' || Array.isArray(st.settings)) st.settings = {};
+    var ps0 = st.settings.periodStart;   // 集計の開始日(1〜28)。初期は給料日の15日
+    if (!(typeof ps0 === 'number' && Math.floor(ps0) === ps0 && ps0 >= 1 && ps0 <= 28)) st.settings.periodStart = 15;
+    if (st.settings.cherished !== undefined && !(Array.isArray(st.settings.cherished) && st.settings.cherished.every(function (x) { return typeof x === 'string'; }))) delete st.settings.cherished;   // 大切にしている支出(カテゴリーid)。未設定なら初期の目安を使う
+    return st;
+  }
+  function parseD(str) { var p = str.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function fmtD(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function addDays(str, n) { var d = parseD(str); d.setDate(d.getDate() + n); return fmtD(d); }
+  function maxStr(a, b) { return a > b ? a : b; }
+  function clampDay(y, m, d) { return Math.min(d, new Date(y, m, 0).getDate()); }
+  function findFixed(id) { for (var i = 0; i < state.fixed.length; i++) if (state.fixed[i].id === id) return state.fixed[i]; return null; }
+  function fixedNameTaken(name, exceptId) { return state.fixed.some(function (f) { return f.id !== exceptId && f.name === name; }); }
+
+  // afterExcl の翌日から through まで(through を含む)の予定の日を返します
+  function fxOccurrences(fx, afterExcl, through) {
+    var lo = fx.startDate && fx.startDate > afterExcl ? addDays(fx.startDate, -1) : afterExcl;
+    var hi = fx.endDate && fx.endDate < through ? fx.endDate : through;
+    var out = [];
+    if (!(lo < hi)) return out;
+    var a = parseD(lo), b = parseD(hi), y, m, o;
+    if (fx.cycle === 'weekly') {
+      var wd = parseD(addDays(lo, 1));
+      while (wd.getDay() !== fx.wday) wd.setDate(wd.getDate() + 1);
+      while (fmtD(wd) <= hi && out.length < 400) { out.push(fmtD(wd)); wd.setDate(wd.getDate() + 7); }
+    } else if (fx.cycle === 'yearly') {
+      for (y = a.getFullYear(); y <= b.getFullYear(); y++) {
+        o = y + '-' + pad(fx.ymonth) + '-' + pad(clampDay(y, fx.ymonth, fx.yday));
+        if (o > lo && o <= hi) out.push(o);
+      }
+    } else {
+      y = a.getFullYear(); m = a.getMonth() + 1;
+      while ((y < b.getFullYear() || (y === b.getFullYear() && m <= b.getMonth() + 1)) && out.length < 400) {
+        o = y + '-' + pad(m) + '-' + pad(clampDay(y, m, fx.day));
+        if (o > lo && o <= hi) out.push(o);
+        m++; if (m > 12) { m = 1; y++; }
+      }
+    }
+    return out;
+  }
+  // 動いている固定費について、今日から約1か月先までの予定を作ります。今月より前にはさかのぼりません。
+  function generateFixed() {
+    var today = todayStr(), horizon = addDays(today, 31), floor = addDays(today.slice(0, 8) + '01', -1);
+    var added = 0, touched = false;
+    state.fixed.forEach(function (fx) {
+      if (!fx.active) return;
+      var lower = maxStr(fx.genThrough || '', floor);
+      if (lower >= horizon) return;
+      fxOccurrences(fx, lower, horizon).forEach(function (occ) {
+        var exists = state.records.some(function (r) { return r.fixedId === fx.id && r.occ === occ; });
+        if (exists) return;
+        state.records.push({ id: newId(), createdAt: Date.now(), type: 'plan', amount: fx.amount, date: occ, catId: fx.catId, catName: fx.catName, name: fx.name, memo: '', dateKind: 'due', status: 'unpaid', fixedId: fx.id, occ: occ });
+        added++;
+      });
+      fx.genThrough = horizon; touched = true;
+    });
+    if (touched) save();
+    return added > 0;
+  }
+  function purgePlans(fxId, all) {
+    var today = todayStr(), n = 0;
+    state.records = state.records.filter(function (r) {
+      var drop = r.type === 'plan' && r.fixedId === fxId && r.status !== 'paid' && (all || (r.status !== 'cancelled' && r.date >= today));
+      if (drop) n++;
+      return !drop;
+    });
+    return n;
+  }
+  function updateOpenPlans(fx) {
+    var today = todayStr();
+    state.records.forEach(function (r) {
+      if (isOpenPlan(r) && r.fixedId === fx.id && r.date >= today) { r.name = fx.name; r.amount = fx.amount; r.catId = fx.catId; r.catName = fx.catName; }
+    });
+  }
+  function deleteFixed(id) {
+    purgePlans(id, true);
+    state.fixed = state.fixed.filter(function (f) { return f.id !== id; });
+  }
+  function schedKey(fx) {
+    var w = fx.cycle === 'weekly' ? fx.wday : fx.cycle === 'yearly' ? fx.ymonth + '-' + fx.yday : fx.day;
+    return [fx.cycle, w, fx.startDate, fx.endDate || '', fx.active ? 1 : 0].join('|');
+  }
+  function cycleText(fx) {
+    if (fx.cycle === 'weekly') return '毎週' + WEEK[fx.wday] + '曜日';
+    if (fx.cycle === 'yearly') return '毎年' + fx.ymonth + '月' + fx.yday + '日';
+    return '毎月' + fx.day + '日' + (fx.day >= 29 ? '（短い月は月末）' : '');
+  }
+  function fixedMonthText(fx) {
+    var cp = periodOf(todayStr()), pr = periodRange(cp.y, cp.m);
+    var plans = state.records.filter(function (r) { return r.type === 'plan' && r.fixedId === fx.id && r.status !== 'cancelled' && r.occ && r.occ >= pr.from && r.occ <= pr.to; });
+    if (!plans.length) return 'この期間の予定はありません';
+    var paid = plans.filter(function (p) { return p.status === 'paid'; }), actual = 0;
+    paid.forEach(function (p) { var e = findRec(p.expenseId); actual += e ? e.amount : p.amount; });
+    var planned = sumOf(plans), many = plans.length > 1;
+    if (!paid.length) return 'この期間の予定 ' + fmt(planned) + '円' + (many ? '（' + plans.length + '件）' : '') + '・未払い';
+    if (paid.length === plans.length) return 'この期間の予定 ' + fmt(planned) + '円 → 実際に払った ' + fmt(actual) + '円';
+    return 'この期間の予定 ' + fmt(planned) + '円（' + plans.length + '件）・支払い済み ' + fmt(actual) + '円（' + paid.length + '件）';
+  }
+  function fixedCardHtml() {
+    var today = todayStr();
+    var rows = state.fixed.map(function (fx) {
+      var chip = !fx.active ? '<span class="chip warn">停止中</span>' : (fx.endDate && fx.endDate < today ? '<span class="chip">終了</span>' : '');
+      return '<li><button type="button" class="cat-row" data-action="fixed-edit" data-id="' + esc(fx.id) + '"><span><b>' + esc(fx.name) + '</b>' +
+        '<small>' + cycleText(fx) + '・' + fmt(fx.amount) + '円・' + esc(fx.catName) + '</small><small>' + fixedMonthText(fx) + '</small></span>' +
+        '<span style="display:flex;align-items:center;gap:6px">' + chip + '<span class="chev" aria-hidden="true">›</span></span></button></li>';
+    }).join('');
+    return '<div class="card"><div class="sec-head"><h2>固定費</h2><span class="sub">家賃・サブスクなど</span></div>' +
+      '<p class="sub" style="margin:0 0 8px">日が近づくと「予定」に自動で入ります。実際に払ったら、予定タブで「支払い済みにする」を押してください。</p>' +
+      (rows ? '<ul class="list" style="margin:0 0 12px">' + rows + '</ul>' : '') +
+      '<button type="button" class="btn" data-action="fixed-add">＋ 固定費を追加</button></div>';
+  }
+  function opt(v, label, cur) { return '<option value="' + v + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + label + '</option>'; }
+  function newFixedDraft() {
+    var t = todayStr(), p = t.split('-').map(Number);
+    return { mode: 'fixed-add', type: 'expense', name: '', amount: '', catId: firstCat('expense'), catName: '', cycle: 'monthly', day: String(p[2]), wday: String(new Date().getDay()), ymonth: String(p[1]), yday: String(p[2]), startDate: t, endMode: 'none', endDate: '', active: '1', errors: {}, confirmDelete: false };
+  }
+  function editFixedDraft(fx) {
+    return { mode: 'fixed-edit', id: fx.id, type: 'expense', name: fx.name, amount: String(fx.amount), catId: fx.catId, catName: fx.catName, cycle: fx.cycle, day: String(fx.day), wday: String(fx.wday), ymonth: String(fx.ymonth), yday: String(fx.yday), startDate: fx.startDate, endMode: fx.endDate ? 'date' : 'none', endDate: fx.endDate || todayStr(), active: fx.active ? '1' : '0', errors: {}, confirmDelete: false };
+  }
+  function renderFixedSheet(focusSel) {
+    var d = ui.sheet, e = d.errors || {}, add = d.mode === 'fixed-add', i;
+    var days = '', wdays = '', months = '', ydays = '';
+    for (i = 1; i <= 31; i++) days += opt(i, i + '日' + (i >= 29 ? '（短い月は月末）' : ''), d.day);
+    for (i = 0; i < 7; i++) wdays += opt(i, WEEK[i] + '曜日', d.wday);
+    for (i = 1; i <= 12; i++) months += opt(i, i + '月', d.ymonth);
+    var maxd = MONTH_MAX[Number(d.ymonth) - 1] || 31;
+    for (i = 1; i <= maxd; i++) ydays += opt(i, i + '日', d.yday);
+    var when;
+    if (d.cycle === 'weekly') when = '<div class="field"><label for="f-wday">記録する曜日</label><select id="f-wday" data-field="wday">' + wdays + '</select></div>';
+    else if (d.cycle === 'yearly') when = '<div class="field"><span class="lab">記録する日</span><div class="amt-row"><select id="f-ymonth" data-field="ymonth" aria-label="月">' + months + '</select><select id="f-yday" data-field="yday" aria-label="日">' + ydays + '</select></div></div>';
+    else when = '<div class="field"><label for="f-day">記録する日</label><select id="f-day" data-field="day">' + days + '</select></div>';
+    var openCount = add ? 0 : state.records.filter(function (r) { return r.fixedId === d.id && isOpenPlan(r); }).length;
+    var h = '<h2 id="sheetTitle">' + (add ? '固定費を追加' : '固定費を編集') + '</h2><form id="sheetForm" novalidate style="display:grid;gap:14px">' +
+      '<div class="note b">' + (add ? '日が近づくと「予定」に自動で入ります。実際に払ったら、予定タブで「支払い済みにする」を押すと、使ったお金に記録されます。' : '名前・金額・カテゴリーを変えると、これから先の未払いの予定にも反映します。日のきまりを変えたときは、これから先の未払いの予定を作り直します。支払い済みの記録は変わりません。') + '</div>' +
+      '<div class="field"><label for="f-fname">名称</label><input id="f-fname" data-field="name" type="text" maxlength="60" autocomplete="off" placeholder="例：家賃、動画サブスク" value="' + esc(d.name) + '"' + (e.name ? ' aria-invalid="true"' : '') + ' aria-describedby="e-fname"><div class="err" id="e-fname" role="alert">' + esc(e.name || '') + '</div></div>' +
+      '<div class="field"><label for="f-amount">金額（円）</label><div class="amt-row"><input id="f-amount" class="amount-input" data-field="amount" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="' + esc(d.amount) + '"' + (e.amount ? ' aria-invalid="true"' : '') + ' aria-describedby="amt-preview e-amount"><button type="button" class="btn ghost calc-open" data-action="open-calc">電卓</button></div><div class="amt-preview" id="amt-preview"></div><div class="err" id="e-amount" role="alert">' + esc(e.amount || '') + '</div></div>' +
+      '<div class="field"><label for="f-cat">カテゴリー</label><select id="f-cat" data-field="catId">' + catOptions(d) + '</select></div>' +
+      '<div class="field"><label for="f-cycle">くり返し</label><select id="f-cycle" data-field="cycle">' + opt('monthly', '毎月', d.cycle) + opt('weekly', '毎週', d.cycle) + opt('yearly', '毎年', d.cycle) + '</select></div>' +
+      when +
+      '<div class="field"><label for="f-fstart">開始日</label><input id="f-fstart" data-field="startDate" type="date" value="' + esc(d.startDate) + '"' + (e.startDate ? ' aria-invalid="true"' : '') + ' aria-describedby="e-fstart"><div class="err" id="e-fstart" role="alert">' + esc(e.startDate || '') + '</div></div>' +
+      '<div class="field"><label for="f-endmode">終わりの日</label><select id="f-endmode" data-field="endMode">' + opt('none', '決めない（ずっと続く）', d.endMode) + opt('date', '決める', d.endMode) + '</select></div>' +
+      (d.endMode === 'date' ? '<div class="field"><label for="f-fend">この日まで</label><input id="f-fend" data-field="endDate" type="date" value="' + esc(d.endDate) + '"' + (e.endDate ? ' aria-invalid="true"' : '') + ' aria-describedby="e-fend"><div class="err" id="e-fend" role="alert">' + esc(e.endDate || '') + '</div></div>' : '') +
+      (add ? '' : '<div class="field"><label for="f-active">状態</label><select id="f-active" data-field="active">' + opt('1', '動かす（予定を作る）', d.active) + opt('0', '停止する（予定を作らない）', d.active) + '</select><div class="sub">停止にすると、これから先の未払いの予定は取り消します。</div></div>');
+    if (d.confirmDelete) h += '<div class="note p" role="alert">「' + esc(d.name) + '」を削除します。未払いの予定' + openCount + '件も一緒に消えます。支払い済みの記録は残ります。この操作は元に戻せません。やめたいだけなら「停止する」がおすすめです。</div>';
+    h += '<div class="actions"><button type="submit" class="btn">' + (add ? '追加する' : '保存する') + '</button><button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button>';
+    if (!add) h += d.confirmDelete
+      ? '<button type="button" class="btn ghost danger" data-action="delete">本当に削除する</button>'
+      : '<button type="button" class="btn ghost danger" data-action="ask-delete">削除する</button>';
+    h += '</div></form>';
+    $('sheet').innerHTML = h;
+    updatePreview();
+    focusIn(focusSel);
+  }
+  function submitFixed(d) {
+    var nm = normName(d.name), amt = parseAmount(d.amount), errs = {};
+    if (!nm) errs.name = '名前を入力してください。';
+    else if (nm.length > 60) errs.name = '名前は60文字までです。';
+    else if (fixedNameTaken(nm, d.id)) errs.name = '同じ名前の固定費がすでにあります。';
+    if (isNaN(amt) || amt < 1) errs.amount = '金額を1円以上の数字で入力してください。';
+    else if (amt > MAX_AMOUNT) errs.amount = '金額は' + fmt(MAX_AMOUNT) + '円までです。';
+    if (!validDate(d.startDate)) errs.startDate = '開始日を選んでください。';
+    if (d.endMode === 'date') {
+      if (!validDate(d.endDate)) errs.endDate = '終わりの日を選んでください。';
+      else if (validDate(d.startDate) && d.endDate < d.startDate) errs.endDate = '終わりの日は、開始日より後にしてください。';
+    }
+    if (Object.keys(errs).length) { d.errors = errs; renderSheet('#f-fname'); return; }
+    var cat = catById(d.catId);
+    var base = { name: nm, amount: amt, catId: d.catId, catName: cat ? cat.name : (d.catName || 'その他'), cycle: d.cycle, day: Number(d.day), wday: Number(d.wday), ymonth: Number(d.ymonth), yday: Number(d.yday), startDate: d.startDate, endDate: d.endMode === 'date' ? d.endDate : '', active: d.active !== '0' };
+    var fx, msg;
+    if (d.mode === 'fixed-add') {
+      fx = base; fx.id = 'f' + newId(); fx.createdAt = Date.now();
+      fx.genThrough = addDays(maxStr(fx.startDate, todayStr().slice(0, 8) + '01'), -1);
+      state.fixed.push(fx);
+      msg = '固定費を追加しました';
+    } else {
+      fx = findFixed(d.id);
+      if (!fx) { closeSheet(); render(); return; }
+      var before = schedKey(fx);
+      Object.keys(base).forEach(function (k) { fx[k] = base[k]; });
+      if (schedKey(fx) !== before) {
+        var gone = purgePlans(fx.id, false);
+        fx.genThrough = addDays(todayStr(), -1);
+        msg = !fx.active ? (gone ? '停止しました。これから先の未払いの予定' + gone + '件を取り消しました' : '停止しました') : (gone ? '保存しました。これから先の未払いの予定を作り直しました' : '保存しました');
+      } else { updateOpenPlans(fx); msg = '保存しました'; }
+    }
+    generateFixed();
+    save(); closeSheet(); render();
+    toast(storageOK ? msg : '変更しましたが、保存できていません');
+  }
+
+  /* ---- 予算 ---- */
+  function budgetEntry(ym) {
+    var found = null;
+    state.budgets.forEach(function (b) { if (b.ym <= ym && (!found || b.ym > found.ym)) found = b; });
+    return found;
+  }
+  function hasBudget(e) { return !!e && (e.total > 0 || Object.keys(e.cats).length > 0); }
+  function budgetState(used, budget) {
+    var rate = used / budget;
+    return { used: used, budget: budget, left: budget - used, rate: rate, state: used > budget ? 'over' : rate >= 0.8 ? 'near' : 'ok' };
+  }
+  function budgetRows(y, m) {
+    var e = budgetEntry(ymKey(y, m));
+    if (!hasBudget(e)) return null;
+    var rows = [], list = ofType('expense', y, m);
+    if (e.total > 0) rows.push(Object.assign({ label: '全体', overall: true }, budgetState(sumOf(list), e.total)));
+    state.categories.filter(function (c) { return c.kind === 'expense'; }).forEach(function (c) {
+      var b = e.cats[c.id];
+      if (b > 0) rows.push(Object.assign({ label: c.name, catId: c.id }, budgetState(sumOf(list.filter(function (r) { return r.catId === c.id; })), b)));
+    });
+    return rows;
+  }
+  function budgetAlert(rec) {
+    if (!rec || rec.type !== 'expense') return '';
+    var bp = periodOf(rec.date), rows = budgetRows(bp.y, bp.m);
+    if (!rows) return '';
+    var out = [];
+    rows.forEach(function (r) {
+      if (!r.overall && r.catId !== rec.catId) return;
+      var who = r.overall ? bp.m + '月分の全体' : '「' + r.label + '」';
+      var before = budgetState(r.used - rec.amount, r.budget);
+      if (r.state === 'over' && before.state !== 'over') out.push(who + 'は予算を' + fmt(-r.left) + '円超えました');
+      else if (r.state === 'near' && before.state === 'ok') out.push(who + 'は予算の' + Math.round(r.rate * 100) + '%になりました');
+    });
+    return out.length ? '。' + out.join('。') : '';
+  }
+  function budgetRowsHtml(rows) {
+    return rows.map(function (r) {
+      var chip = r.state === 'over' ? '<span class="chip over">超えました</span>' : r.state === 'near' ? '<span class="chip warn">もうすぐ</span>' : '<span class="chip ok">余裕あり</span>';
+      var pct = Math.round(r.rate * 100);
+      var left = r.state === 'over' ? yen(-r.left) + ' オーバー' : 'あと ' + yen(r.left);
+      return '<div class="budget"><div class="budget-top"><span class="name">' + esc(r.label) + '</span>' + chip + '</div>' +
+        '<div class="track" role="img" aria-label="' + esc(r.label) + ' 予算の' + pct + '%を使用"><div class="fill ' + r.state + '" style="width:' + Math.min(100, pct) + '%"></div></div>' +
+        '<div class="budget-meta"><span>使った ' + yen(r.used) + '</span><span>予算 ' + yen(r.budget) + '</span></div>' +
+        '<div class="budget-meta"><span>' + left + '</span><span>使用 ' + pct + '%</span></div></div>';
+    }).join('');
+  }
+  function homeBudgetHtml(y, m) {
+    var rows = budgetRows(y, m);
+    if (!rows) return '<div class="card"><div class="sec-head"><h2>' + m + '月分の予算</h2></div><p class="sub" style="margin:0 0 10px">予算を決めると、ここにカテゴリーごとの残りが出ます。</p><button type="button" class="btn ghost small" data-action="tab" data-tab="settings">設定で予算を決める</button></div>';
+    return '<div class="card"><div class="sec-head"><h2>' + m + '月分の予算</h2><span class="sub">8割を超えると「もうすぐ」</span></div>' + budgetRowsHtml(rows) + '</div>';
+  }
+  function budgetSettingsHtml() {
+    var ym = ui.budgetYm, key = ymKey(ym.y, ym.m), e = budgetEntry(key), has = hasBudget(e);
+    var h = '<div class="card"><div class="sec-head"><h2>期間ごとの予算</h2><span class="sub">変えるまで続きます</span></div>' +
+      '<div class="month"><button type="button" data-action="bmonth" data-dir="-1" aria-label="前の期間">‹</button><h2>' + periodHead(ym.y, ym.m) + '</h2><button type="button" data-action="bmonth" data-dir="1" aria-label="次の期間">›</button></div>';
+    if (has) {
+      h += '<div style="margin:8px 0">';
+      if (e.total > 0) h += '<div class="kv"><span><b>全体</b></span>' + yen(e.total) + '</div>';
+      state.categories.filter(function (c) { return c.kind === 'expense' && e.cats[c.id] > 0; }).forEach(function (c) {
+        h += '<div class="kv"><span>' + esc(c.name) + '</span>' + yen(e.cats[c.id]) + '</div>';
+      });
+      h += '</div>';
+      if (e.ym !== key) h += '<p class="sub" style="margin:0 0 10px">' + e.ym.slice(0, 4) + '年' + Number(e.ym.slice(5)) + '月分に決めた予算が続いています。</p>';
+    } else h += '<p class="sub" style="margin:8px 0 10px">この期間には予算がありません。</p>';
+    return h + '<button type="button" class="btn" data-action="budget-edit">' + (has ? 'この期間から予算を変える' : 'この期間から予算を決める') + '</button></div>';
+  }
+  function parseOpt(v) {
+    var t = String(v == null ? '' : v).trim();
+    if (!t) return 0;
+    var n = parseAmount(t);
+    return isNaN(n) || n > MAX_AMOUNT ? NaN : n;
+  }
+  function setBudget(ym, total, cats) {
+    var list = state.budgets.filter(function (b) { return b.ym !== ym; });
+    list.push({ ym: ym, total: total, cats: cats });
+    list.sort(function (p, q) { return p.ym < q.ym ? -1 : p.ym > q.ym ? 1 : 0; });
+    state.budgets = list;
+  }
+  function deleteBudgetEntry(ym) { state.budgets = state.budgets.filter(function (b) { return b.ym !== ym; }); }
+  function openBudgetSheet(key) {
+    var eff = budgetEntry(key), vals = {};
+    if (eff) Object.keys(eff.cats).forEach(function (k) { if (catById(k)) vals[k] = String(eff.cats[k]); });
+    openSheet({ mode: 'budget', ym: key, total: eff && eff.total > 0 ? String(eff.total) : '', vals: vals, errors: { cats: {} }, confirmDelete: false, hasOwn: state.budgets.some(function (b) { return b.ym === key; }) });
+  }
+  function updateBudgetSum() {
+    var d = ui.sheet, el = $('b-sum');
+    if (!el || !d || d.mode !== 'budget') return;
+    var sum = 0, any = false;
+    Object.keys(d.vals).forEach(function (k) {
+      var c = catById(k), v = parseOpt(d.vals[k]);
+      if (c && c.kind === 'expense' && !isNaN(v) && v > 0) { sum += v; any = true; }
+    });
+    var tot = parseOpt(d.total);
+    el.textContent = any ? 'カテゴリー予算の合計：' + fmt(sum) + '円' + (tot > 0 && sum > tot ? '（全体の予算より' + fmt(sum - tot) + '円多くなっています）' : '') : '';
+  }
+  function renderBudgetSheet(focusSel) {
+    var d = ui.sheet, e = d.errors || {}, ce = e.cats || {};
+    var y = Number(d.ym.slice(0, 4)), m = Number(d.ym.slice(5));
+    var h = '<h2 id="sheetTitle">' + y + '年' + m + '月分からの予算</h2><form id="sheetForm" novalidate style="display:grid;gap:14px">' +
+      '<div class="note b">ここで決めた予算は、' + y + '年' + m + '月分から、次に変えるまで続きます。これより前の期間は変わりません。空欄は「予算なし」です。</div>' +
+      '<div class="field"><label for="f-btotal">全体の予算（円）</label><input id="f-btotal" class="amount-input" data-field="total" type="text" inputmode="numeric" autocomplete="off" placeholder="例：80000" value="' + esc(d.total) + '"' + (e.total ? ' aria-invalid="true"' : '') + ' aria-describedby="e-btotal"><div class="err" id="e-btotal" role="alert">' + esc(e.total || '') + '</div></div>' +
+      '<div class="sec-head" style="margin:4px 0 -6px"><h2>カテゴリーごと</h2></div>';
+    state.categories.filter(function (c) { return c.kind === 'expense'; }).forEach(function (c) {
+      h += '<div class="field"><label for="f-b-' + esc(c.id) + '">' + esc(c.name) + '（円）</label><input id="f-b-' + esc(c.id) + '" data-bcat="' + esc(c.id) + '" type="text" inputmode="numeric" autocomplete="off" placeholder="予算なし" value="' + esc((d.vals && d.vals[c.id]) || '') + '"' + (ce[c.id] ? ' aria-invalid="true"' : '') + '><div class="err" role="alert">' + esc(ce[c.id] || '') + '</div></div>';
+    });
+    h += '<div class="amt-preview" id="b-sum" aria-live="polite"></div>';
+    if (d.confirmDelete) h += '<div class="note p" role="alert">この期間に決めた予算を取り消します。この期間は、これより前に決めた予算（なければ「予算なし」）にもどります。</div>';
+    h += '<div class="actions"><button type="submit" class="btn">保存する</button><button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button>';
+    if (d.hasOwn) h += d.confirmDelete
+      ? '<button type="button" class="btn ghost danger" data-action="delete">本当に取り消す</button>'
+      : '<button type="button" class="btn ghost danger" data-action="ask-delete">この期間の設定を取り消す</button>';
+    h += '</div></form>';
+    $('sheet').innerHTML = h;
+    updateBudgetSum();
+    focusIn(focusSel);
+  }
+  function submitBudget(d) {
+    var errs = { cats: {} }, bad = false, tot = parseOpt(d.total), cats = {};
+    if (isNaN(tot)) { errs.total = '空欄か、数字で入力してください。'; bad = true; }
+    state.categories.filter(function (c) { return c.kind === 'expense'; }).forEach(function (c) {
+      var v = parseOpt(d.vals[c.id]);
+      if (isNaN(v)) { errs.cats[c.id] = '空欄か、数字で入力してください。'; bad = true; }
+      else if (v > 0) cats[c.id] = v;
+    });
+    if (bad) { d.errors = errs; renderSheet('#f-btotal'); return; }
+    setBudget(d.ym, tot, cats);
+    save(); closeSheet(); render();
+    toast(storageOK ? '予算を保存しました' : '変更しましたが、保存できていません');
+  }
+
+  /* ============ バックアップ・復元・CSV ============
+     バックアップは { app, exportedAt, data: state } のJSONファイルです。
+     復元は、中身を検査してから全体を置き換えます(置き換える直前の状態は1回分控えます)。 */
+  var META_KEY = 'kakeibo.meta', SNAP_KEY = 'kakeibo.v1.beforeRestore';
+  function readMeta() { try { return JSON.parse(localStorage.getItem(META_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function writeMeta(patch) {
+    try { var m = readMeta(); for (var k in patch) m[k] = patch[k]; localStorage.setItem(META_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+  function readBroken() { try { return localStorage.getItem(KEY + '.broken'); } catch (e) { return null; } }
+  function whenText(ms) {
+    var d = new Date(ms);
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function backupText() { return JSON.stringify({ app: 'kakeibo', exportedAt: new Date().toISOString(), data: state }, null, 1); }
+  function backupDue() {
+    if (state.records.length < 5) return false;
+    var last = readMeta().lastBackupAt;
+    return !last || Date.now() - last > 30 * 86400000;
+  }
+  function reminderHtml() {
+    if (!backupDue()) return '';
+    var last = readMeta().lastBackupAt;
+    return '<div class="note y"><b>' + (last ? '最後のバックアップから30日以上たっています。' : 'まだバックアップをしていません。') + '</b><br>記録が' + state.records.length + '件あります。ブラウザのデータが消えると戻せないので、書き出しておくと安心です。' +
+      '<div style="margin-top:10px"><button type="button" class="btn small" data-action="tab" data-tab="settings">設定でバックアップする</button></div></div>';
+  }
+
+  function cleanBackup(text) {
+    var obj, i;
+    function bad(m) { return { ok: false, msg: m }; }
+    try { obj = JSON.parse(String(text).replace(/^﻿/, '')); } catch (e) { return bad('読み込めませんでした。バックアップのファイルか、文字が欠けていないか確認してください。'); }
+    var dt = obj && obj.app === 'kakeibo' ? obj.data : null;
+    if (!dt || dt.version !== 1 || !Array.isArray(dt.records) || !Array.isArray(dt.categories)) return bad('このアプリのバックアップではないか、形式が合いません。');
+    var cats = [], seen = Object.create(null);
+    for (i = 0; i < dt.categories.length; i++) {
+      var c = dt.categories[i];
+      if (!c || typeof c.id !== 'string' || !c.id || typeof c.name !== 'string' || !c.name || (c.kind !== 'expense' && c.kind !== 'income') || seen[c.id]) return bad('カテゴリーの' + (i + 1) + '件目に問題があります。');
+      seen[c.id] = true; cats.push({ id: c.id, name: c.name.slice(0, 60), kind: c.kind });
+    }
+    if (!cats.some(function (x) { return x.kind === 'expense'; }) || !cats.some(function (x) { return x.kind === 'income'; })) return bad('カテゴリーが足りません。');
+    function str(v, max) { return typeof v === 'string' ? v.slice(0, max) : ''; }
+    var recs = [], rseen = Object.create(null), cnt = { expense: 0, income: 0, plan: 0 };
+    for (i = 0; i < dt.records.length; i++) {
+      var r = dt.records[i], n = '記録の' + (i + 1) + '件目';
+      if (!r || typeof r.id !== 'string' || !r.id || rseen[r.id]) return bad(n + 'のIDが正しくありません。');
+      if (r.type !== 'expense' && r.type !== 'income' && r.type !== 'plan') return bad(n + 'の種類が正しくありません。');
+      if (typeof r.amount !== 'number' || !isFinite(r.amount) || Math.floor(r.amount) !== r.amount || r.amount < 1 || r.amount > MAX_AMOUNT) return bad(n + 'の金額が正しくありません。');
+      if (!validDate(r.date)) return bad(n + 'の日付が正しくありません。');
+      if (typeof r.catId !== 'string' || typeof r.catName !== 'string') return bad(n + 'のカテゴリーが正しくありません。');
+      rseen[r.id] = true; cnt[r.type]++;
+      var out = { id: r.id, createdAt: typeof r.createdAt === 'number' ? r.createdAt : 0, type: r.type, amount: r.amount, date: r.date, catId: r.catId, catName: r.catName.slice(0, 60), name: str(r.name, 60), memo: str(r.memo, 500) };
+      if (r.type === 'plan') {
+        if (r.status !== 'unpaid' && r.status !== 'considering' && r.status !== 'paid' && r.status !== 'cancelled') return bad(n + 'の支払い状況が正しくありません。');
+        out.status = r.status; out.dateKind = r.dateKind === 'due' ? 'due' : 'purchase';
+        if (validDate(r.paidDate)) out.paidDate = r.paidDate;
+        if (typeof r.expenseId === 'string') out.expenseId = r.expenseId;
+      }
+      if (r.type === 'expense' && typeof r.fromPlanId === 'string') out.fromPlanId = r.fromPlanId;
+      if (typeof r.fixedId === 'string' && r.fixedId) out.fixedId = r.fixedId;
+      if (r.type === 'plan' && validDate(r.occ)) out.occ = r.occ;
+      recs.push(out);
+    }
+    function intIn(v, lo, hi) { return typeof v === 'number' && Math.floor(v) === v && v >= lo && v <= hi; }
+    var fixed = [], fseen = Object.create(null), fsrc = Array.isArray(dt.fixed) ? dt.fixed : [];
+    for (i = 0; i < fsrc.length; i++) {
+      var f = fsrc[i], fn = '固定費の' + (i + 1) + '件目';
+      if (!f || typeof f.id !== 'string' || !f.id || fseen[f.id] || typeof f.name !== 'string' || !f.name) return bad(fn + 'が正しくありません。');
+      if (f.cycle !== 'monthly' && f.cycle !== 'weekly' && f.cycle !== 'yearly') return bad(fn + 'の周期が正しくありません。');
+      if (!intIn(f.amount, 1, MAX_AMOUNT)) return bad(fn + 'の金額が正しくありません。');
+      if (!validDate(f.startDate) || (f.endDate && !validDate(f.endDate))) return bad(fn + 'の日付が正しくありません。');
+      if (!intIn(f.day, 1, 31) || !intIn(f.wday, 0, 6) || !intIn(f.ymonth, 1, 12) || !intIn(f.yday, 1, 31)) return bad(fn + 'の日のきまりが正しくありません。');
+      fseen[f.id] = true;
+      fixed.push({ id: f.id, name: f.name.slice(0, 60), amount: f.amount, catId: str(f.catId, 80), catName: str(f.catName, 60) || 'その他', cycle: f.cycle, day: f.day, wday: f.wday, ymonth: f.ymonth, yday: f.yday, startDate: f.startDate, endDate: f.endDate || '', active: f.active !== false, genThrough: validDate(f.genThrough) ? f.genThrough : '', createdAt: typeof f.createdAt === 'number' ? f.createdAt : 0 });
+    }
+    var budgets = [], bseen = Object.create(null), bsrc = Array.isArray(dt.budgets) ? dt.budgets : [];
+    for (i = 0; i < bsrc.length; i++) {
+      var bd = bsrc[i], bn = '予算の' + (i + 1) + '件目';
+      if (!bd || typeof bd.ym !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(bd.ym) || bseen[bd.ym]) return bad(bn + 'が正しくありません。');
+      var btotal = bd.total == null ? 0 : bd.total;
+      if (!(btotal === 0 || intIn(btotal, 1, MAX_AMOUNT))) return bad(bn + 'の金額が正しくありません。');
+      var bcats = {}, bks = bd.cats && typeof bd.cats === 'object' ? Object.keys(bd.cats) : [];
+      for (var j = 0; j < bks.length; j++) {
+        if (bks[j] === '__proto__' || seen[bks[j]] !== true) continue;
+        if (!intIn(bd.cats[bks[j]], 1, MAX_AMOUNT)) return bad(bn + 'のカテゴリーの金額が正しくありません。');
+        bcats[bks[j]] = bd.cats[bks[j]];
+      }
+      bseen[bd.ym] = true; budgets.push({ ym: bd.ym, total: btotal, cats: bcats });
+    }
+    budgets.sort(function (p, q) { return p.ym < q.ym ? -1 : p.ym > q.ym ? 1 : 0; });
+    var notes = {}, ncount = 0, nsrc = dt.notes && typeof dt.notes === 'object' && !Array.isArray(dt.notes) ? dt.notes : {}, nks = Object.keys(nsrc);
+    for (i = 0; i < nks.length; i++) {
+      if (!validDate(nks[i])) continue;
+      var nv = str(nsrc[nks[i]], NOTE_MAX);
+      if (nv.trim()) { notes[nks[i]] = nv; ncount++; }
+    }
+    var psv = dt.settings && typeof dt.settings === 'object' ? dt.settings.periodStart : null, pstart = intIn(psv, 1, 28) ? psv : 15;
+    var setOut = { periodStart: pstart };
+    if (dt.settings && Array.isArray(dt.settings.cherished)) setOut.cherished = dt.settings.cherished.filter(function (x) { return typeof x === 'string' && seen[x] === true; });
+    var at = Date.parse(obj.exportedAt);
+    return { ok: true, state: { version: 1, categories: cats, records: recs, fixed: fixed, budgets: budgets, notes: notes, settings: setOut }, info: { at: isNaN(at) ? null : at, expense: cnt.expense, income: cnt.income, plan: cnt.plan, cats: cats.length, fixed: fixed.length, budgets: budgets.length, notes: ncount, periodStart: pstart } };
+  }
+  function readSnapshot() {
+    try {
+      var raw = localStorage.getItem(SNAP_KEY); if (!raw) return null;
+      var sn = JSON.parse(raw);
+      var res = cleanBackup(JSON.stringify({ app: 'kakeibo', exportedAt: new Date(sn.at).toISOString(), data: sn.state }));
+      return res.ok ? { at: sn.at, res: res } : null;
+    } catch (e) { return null; }
+  }
+
+  function csvCell(v, isText) {
+    var s = String(v == null ? '' : v);
+    if (isText && /^[=+\-@\t\r]/.test(s)) s = '\'' + s;   // 表計算アプリで式として動かないようにする
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function buildCsv() {
+    var TYPE = { expense: '使ったお金', income: '収入', plan: '予定' };
+    var STATUS = { unpaid: '未払い', considering: '検討中', paid: '支払い済み', cancelled: '取り消し' };
+    var head = ['日付', '種類', 'カテゴリー', '名称', '金額', 'メモ', '予定の状況', '予定の日付の種類', '支払った日', '予定から作った記録', '固定費'];
+    var lines = [head.map(function (h) { return csvCell(h, false); }).join(',')];
+    state.records.slice().sort(function (a, b) {
+      return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.createdAt || 0) - (b.createdAt || 0);
+    }).forEach(function (r) {
+      var plan = r.type === 'plan';
+      lines.push([
+        csvCell(r.date, false), csvCell(TYPE[r.type] || '', false), csvCell(r.catName, true), csvCell(r.name, true), csvCell(r.amount, false), csvCell(r.memo, true),
+        csvCell(plan ? (STATUS[r.status] || '') : '', false), csvCell(plan ? (r.dateKind === 'due' ? '支払い期限' : '購入予定日') : '', false),
+        csvCell(plan && r.status === 'paid' ? (r.paidDate || '') : '', false), csvCell(r.fromPlanId ? 'はい' : '', false), csvCell(r.fixedId ? 'はい' : '', false)
+      ].join(','));
+    });
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+
+  function getDownloads() {
+    try { if (window.claude && window.claude.use) return window.claude.use('downloads').then(function (d) { return d; }, function () { return null; }); } catch (e) {}
+    return Promise.resolve(null);
+  }
+  function openCopySheet(title, help, text, kind) {
+    openSheet({ mode: 'copy', kind: kind || 'backup', title: title, help: help, text: text, confirmDelete: false });
+  }
+  function saveFile(filename, data, kind) {
+    if (saveBusy) return Promise.resolve();
+    saveBusy = true;
+    return getDownloads().then(function (dl) {
+      if (!dl) throw { code: 'unavailable' };
+      return dl.save({ filename: filename, data: data });
+    }).then(function () {
+      saveBusy = false;
+      if (kind === 'backup') { writeMeta({ lastBackupAt: Date.now() }); render(); }
+      toast(kind === 'backup' ? 'バックアップを書き出しました。保存先でファイルを確認してください' : 'CSVを書き出しました。保存先でファイルを確認してください');
+    }, function (err) {
+      saveBusy = false;
+      var code = err && err.code;
+      if (code === 'declined') { toast('書き出しをやめました'); return; }
+      if (code === 'rate_limited') { toast('少し待ってから、もう一度押してください'); return; }
+      if (kind === 'backup') openCopySheet('バックアップをコピー', 'この画面ではファイルに書き出せませんでした。かわりに、文字でコピーできます。コピーして、メモアプリなどに貼り付けて保存してください。', backupText());
+      else toast('この画面ではCSVを書き出せませんでした');
+    });
+  }
+  function copyText() {
+    var d = ui.sheet, el = $('f-copy');
+    function fallback() {
+      if (el && el.select) { el.focus(); el.select(); try { el.setSelectionRange(0, 99999999); } catch (e) {} }
+      toast('コピーできませんでした。選択された文字を長押ししてコピーしてください');
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(d.text).then(function () { toast('コピーしました。メモアプリなどに貼り付けて保存してください'); }, fallback);
+        return;
+      }
+    } catch (e) {}
+    fallback();
+  }
+  function restoreCheck() {
+    var d = ui.sheet;
+    if (!d.text || !String(d.text).trim()) { d.error = 'ファイルを選ぶか、文字を貼り付けてください。'; d.parsed = null; renderSheet('#f-file'); return; }
+    var res = cleanBackup(d.text);
+    if (!res.ok) { d.error = res.msg; d.parsed = null; renderSheet('#f-text'); return; }
+    d.error = ''; d.parsed = res;
+    renderSheet('[data-action="restore-apply"]');
+  }
+  function restoreApply() {
+    var d = ui.sheet, p = d.parsed;
+    if (!p) return;
+    try { localStorage.setItem(SNAP_KEY, JSON.stringify({ at: Date.now(), state: state })); } catch (e) {}
+    state = normalizeState(p.state);
+    resetPeriodUi();
+    generateFixed();
+    save(); closeSheet(); render();
+    toast(storageOK ? '復元しました。記録は' + state.records.length + '件です' : '復元しましたが、保存できていません');
+  }
+  function renderRestoreSheet(focusSel) {
+    var d = ui.sheet, p = d.parsed;
+    var h = '<h2 id="sheetTitle">' + (d.fromSnapshot ? '復元の前の状態に戻す' : 'バックアップから復元') + '</h2>';
+    if (!p) {
+      h += '<div class="note y">今の記録は、バックアップの内容にすべて置き換わります。置き換える直前の状態は、1回分だけ控えておきます。</div>' +
+        '<div class="field"><label for="f-file">バックアップのファイルを選ぶ</label><input id="f-file" type="file" accept=".json,application/json,text/plain"></div>' +
+        '<div class="field"><label for="f-text">または、コピーした文字を貼り付ける</label><textarea id="f-text" data-field="text" placeholder="ここに貼り付け">' + esc(d.text || '') + '</textarea></div>' +
+        '<div class="err" id="e-restore" role="alert">' + esc(d.error || '') + '</div>' +
+        '<div class="actions"><button type="button" class="btn" data-action="restore-check">内容を確認する</button><button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button></div>';
+    } else {
+      var i = p.info, now = state.records.length, next = p.state.records.length;
+      h += '<div class="card"><p class="label">' + (d.fromSnapshot ? '控えの中身' : 'バックアップの中身') + '</p><ul class="plain">' +
+        '<li>' + (d.fromSnapshot ? '控えた日時' : '書き出した日時') + '：' + (i.at ? whenText(i.at) : '不明') + '</li>' +
+        '<li>記録：' + next + '件（使ったお金 ' + i.expense + '件、収入 ' + i.income + '件、予定 ' + i.plan + '件）</li>' +
+        '<li>カテゴリー：' + i.cats + '個</li>' +
+        '<li>固定費：' + i.fixed + '件、予算の設定：' + i.budgets + '件</li>' +
+        '<li>日付のメモ：' + i.notes + '件</li>' +
+        '<li>集計の開始日：毎月' + i.periodStart + '日</li></ul></div>' +
+        '<div class="note ' + (next < now ? 'p' : 'b') + '">今の記録は' + now + '件です。この内容に置き換えると' + next + '件になります。' + (next < now ? '今より少なくなります。' : '') + '</div>' +
+        '<div class="actions"><button type="button" class="btn" data-action="restore-apply">この内容に置き換える</button>' +
+        (d.fromSnapshot ? '' : '<button type="button" class="btn ghost" data-action="restore-back">もどる</button>') +
+        '<button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button></div>';
+    }
+    $('sheet').innerHTML = h;
+    focusIn(focusSel);
+  }
+  function renderCopySheet(focusSel) {
+    var d = ui.sheet;
+    var h = '<h2 id="sheetTitle">' + esc(d.title) + '</h2><div class="note y">' + esc(d.help) + '</div>' +
+      '<div class="field"><label for="f-copy">文字（タップするとすべて選べます）</label><textarea id="f-copy" readonly rows="8">' + esc(d.text) + '</textarea></div>';
+    if (d.kind === 'broken' && d.confirmDelete) h += '<div class="note p" role="alert">この控えを削除します。コピーして残していない場合、二度と取り出せません。</div>';
+    h += '<div class="actions"><button type="button" class="btn" data-action="copy-text">すべてコピーする</button><button type="button" class="btn ghost" data-action="close-sheet">閉じる</button>';
+    if (d.kind === 'broken') h += d.confirmDelete
+      ? '<button type="button" class="btn ghost danger" data-action="delete">本当に削除する</button>'
+      : '<button type="button" class="btn ghost danger" data-action="ask-delete">この控えを削除する</button>';
+    h += '</div>';
+    $('sheet').innerHTML = h;
+    focusIn(focusSel);
+  }
+
+  function renderBanner() {
+    var h = '';
+    if (!storageOK) h += '<div class="note p" role="alert"><b>記録を保存できません。</b><br>この画面では保存が許可されていません。閉じると記録が消えます。Safariで開き直してください。</div>';
+    if (loadProblem) h += '<div class="note p" role="alert"><b>保存されていたデータを読み込めませんでした。</b><br>壊れたデータは別の場所に残してあります。設定の「バックアップと復元」から取り出せます。</div>';
+    if (recovered) h += '<div class="note p" role="alert"><b>保存データを読み込めなかったため、1つ前の保存から戻しました。</b><br>直近の記録が足りないときは、バックアップから復元してください。</div>';
+    $('banner').innerHTML = h;
+  }
+
+  function renderHome() {
+    var cp = periodOf(todayStr()), y = cp.y, m = cp.m, pr = periodRange(y, m);
+    var s = stats(y, m);
+    var all = ofType('expense').concat(ofType('income')).sort(recSort).slice(0, 5);
+    var hasAny = state.records.length > 0;
+    var daysLeft = Math.round((parseD(pr.to) - parseD(todayStr())) / 86400000) + 1;
+
+    var tips = [];
+    var brows = budgetRows(y, m);
+    if (brows) brows.forEach(function (r) {
+      var who = r.overall ? m + '月分の全体' : '「' + esc(r.label) + '」';
+      if (r.state === 'over') tips.push(who + 'は予算を' + fmt(-r.left) + '円超えました。');
+      else if (r.state === 'near') tips.push(who + 'は予算の' + Math.round(r.rate * 100) + '%を使いました。残りは' + fmt(r.left) + '円です。');
+    });
+    var cats = catTotals(y, m);
+    if (cats.length) tips.push('この期間でいちばん使っているのは「' + esc(cats[0].cat) + '」で、' + fmt(cats[0].amount) + '円です。');
+    if (hasAny) {
+      if (s.free >= 0) tips.push('期間の終わりまで' + daysLeft + '日。1日あたり約' + fmt(Math.floor(s.free / daysLeft)) + '円まで使える計算です。');
+      else tips.push('期間の終わりまでの予定を払うと、' + fmt(-s.free) + '円足りない計算です。');
+    }
+    var late = openPlans().filter(function (p) { return p.date < todayStr(); }).length;
+    if (late) tips.push('日付を過ぎた予定が' + late + '件あります。「予定」タブで確認してください。');
+    if (!tips.length) tips.push('記録がたまると、ここに節約のヒントが出ます。');
+
+    $('screen-home').innerHTML =
+      '<button type="button" class="btn" data-action="add" data-type="expense">＋ 記録する</button>' +
+      reminderHtml() + monthEndHtml() +
+      '<div class="note y taped"><p class="label">' + m + '月分の収支（収入 − 使ったお金）</p><div class="big">' + yen(s.balance) + '</div><div class="sub">' + rangeText(pr) + '（今日は' + jpMD(todayStr()) + '。期間の残りは' + daysLeft + '日）</div></div>' +
+      '<div class="trio">' +
+        '<div class="note g"><p class="label">収入</p>' + yen(s.income) + '</div>' +
+        '<div class="note p"><p class="label">使った</p>' + yen(s.spent) + '</div>' +
+        '<div class="note b"><p class="label">これから払う</p>' + yen(s.planned) + '</div>' +
+      '</div>' +
+      '<div class="card"><p class="label">自由に使える金額</p><div class="big">' + yen(s.free) + '</div>' +
+        '<div class="formula"><div><span>この期間の収入</span>' + yen(s.income) + '</div><div><span>− 使ったお金</span>' + yen(s.spent) + '</div><div><span>− 期間の終わり（' + jpMD(pr.to) + '）までの予定</span>' + yen(s.planned) + '</div>' +
+        '<p class="hint">期間の終わりまでの「未払い」と「検討中」の予定を引いています。支払い済みの予定は、使ったお金に入ります。</p></div></div>' +
+      homeBudgetHtml(y, m) +
+      '<div><div class="sec-head"><h2>最近の記録</h2>' + (all.length ? '<button type="button" class="chip" data-action="tab" data-tab="records" style="border:0;min-height:32px;cursor:pointer">すべて見る</button>' : '') + '</div>' +
+        (all.length ? '<div class="card"><ul class="list">' + all.map(rowHtml).join('') + '</ul></div>' : emptyHtml('まだ記録がありません。<br>最初の1件を書いてみましょう。', '＋ 記録する', 'expense')) + '</div>' +
+      '<div class="note g"><h2 style="margin-bottom:8px">節約メモ</h2><ul class="tips">' + tips.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  }
+
+  function renderRecords() {
+    var y = ui.ym.y, m = ui.ym.m, isExp = ui.kind === 'expense';
+    var list = ofType(ui.kind, y, m).sort(recSort);
+    var total = sumOf(list);
+    $('screen-records').innerHTML =
+      '<div class="seg" role="tablist" aria-label="記録の種類">' +
+        '<button type="button" role="tab" data-action="kind" data-kind="expense" aria-selected="' + isExp + '">使ったお金</button>' +
+        '<button type="button" role="tab" data-action="kind" data-kind="income" aria-selected="' + !isExp + '">収入</button></div>' +
+      '<div class="month"><button type="button" data-action="month" data-dir="-1" aria-label="前の期間">‹</button><h2>' + periodHead(y, m) + '</h2><button type="button" data-action="month" data-dir="1" aria-label="次の期間">›</button></div>' +
+      '<div class="note ' + (isExp ? 'p' : 'g') + ' taped"><p class="label">' + m + '月分の' + (isExp ? '使ったお金' : '収入') + 'の合計</p><div class="big">' + yen(total) + '</div></div>' +
+      '<button type="button" class="btn" data-action="add" data-type="' + ui.kind + '">＋ ' + (isExp ? '使ったお金' : '収入') + 'を記録する</button>' +
+      (list.length ? '<div class="card"><ul class="list">' + list.map(rowHtml).join('') + '</ul></div>' : emptyHtml(m + '月分の' + (isExp ? '使ったお金' : '収入') + 'の記録はありません。'));
+  }
+
+  function planHtml(p, today) {
+    var chip = p.status === 'considering' ? '<span class="chip warn">検討中</span>' : '<span class="chip plan">未払い</span>';
+    var late = p.date < today ? '<span class="chip over">日付を過ぎています</span>' : '';
+    return '<div class="plan-item"><div class="plan-head"><b>' + esc(p.name || p.catName) + '</b>' + yen(p.amount, 'mid') + '</div>' +
+      '<div class="plan-meta">' + chip + '<span>' + (p.dateKind === 'due' ? '支払い期限' : '購入予定日') + ' ' + dlabel(p.date) + '</span><span class="chip">' + esc(p.catName) + '</span>' + (p.fixedId ? '<span class="chip">固定費</span>' : '') + late + '</div>' +
+      (p.memo ? '<p class="memo">' + esc(p.memo) + '</p>' : '') +
+      '<div class="plan-actions"><button type="button" class="btn ghost small" data-action="edit" data-id="' + p.id + '">編集</button>' +
+      '<button type="button" class="btn small" data-action="convert" data-id="' + p.id + '">支払い済みにする</button>' +
+      '<button type="button" class="btn ghost small danger" data-action="cancel-plan" data-id="' + p.id + '">取り消す</button></div></div>';
+  }
+  function paidRowHtml(p) {
+    var e = findRec(p.expenseId), actual = e ? e.amount : p.amount, d = p.amount - actual;
+    return '<li><button type="button" class="row" data-action="edit" data-id="' + p.id + '"><span class="d">' + dlabel(e ? e.date : (p.paidDate || p.date)) + '</span>' +
+      '<span class="t"><b>' + esc(p.name || p.catName) + '</b><span class="chip ok">支払い済み</span>' + (e ? diffChip(d) : '') + '</span>' +
+      '<span class="amt out">' + yen(actual) + '<small class="cmp-sub">予定 ' + fmt(p.amount) + '円</small></span></button></li>';
+  }
+  function cancelledRowHtml(p) {
+    return '<li><button type="button" class="row" data-action="edit" data-id="' + p.id + '"><span class="d">' + dlabel(p.date) + '</span>' +
+      '<span class="t"><b>' + esc(p.name || p.catName) + '</b><span class="chip">取り消し</span><span class="chip">' + esc(p.catName) + '</span></span>' +
+      '<span class="amt out cmp-x">' + yen(p.amount) + '</span></button>' +
+      '<div class="plan-actions" style="padding:0 0 10px"><button type="button" class="btn ghost small" data-action="restore-plan" data-id="' + p.id + '">予定にもどす</button></div></li>';
+  }
+  function renderPlans() {
+    var today = todayStr();
+    var open = openPlans().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    var paid = state.records.filter(function (r) { return r.type === 'plan' && r.status === 'paid'; }).sort(function (a, b) { return (b.paidDate || '') < (a.paidDate || '') ? -1 : 1; });
+    var canc = state.records.filter(function (r) { return r.type === 'plan' && r.status === 'cancelled'; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    var cp = periodOf(today), thisMonth = stats(cp.y, cp.m).planned, pend = periodRange(cp.y, cp.m).to;
+    $('screen-plans').innerHTML =
+      '<div class="note b taped"><p class="label">これから払う予定の合計</p><div class="big">' + yen(sumOf(open)) + '</div><div class="sub">うち今の期間の終わり（' + jpMD(pend) + '）までの分 ' + fmt(thisMonth) + '円。使ったお金の合計には入りません。</div></div>' +
+      '<button type="button" class="btn" data-action="add" data-type="plan">＋ 予定を追加する</button>' +
+      (open.length ? '<div class="card">' + open.map(function (p) { return planHtml(p, today); }).join('') + '</div>' : emptyHtml('これから払う予定はありません。')) +
+      (paid.length ? '<details class="card"><summary>支払い済み（' + paid.length + '件）</summary><ul class="list">' + paid.map(paidRowHtml).join('') + '</ul></details>' : '') +
+      (canc.length ? '<details class="card"><summary>取り消した予定（' + canc.length + '件）</summary><p class="sub" style="margin:0 0 6px">取り消した予定は、どの合計にも入りません。</p><ul class="list">' + canc.map(cancelledRowHtml).join('') + '</ul></details>' : '') +
+      (paid.length || open.length || canc.length ? '<button type="button" class="btn ghost" data-action="open-compare">予定と実際を比べる（分析へ）</button>' : '');
+  }
+
+  /* ============ 分析(集計とグラフ) ============
+     3種類は、混ぜずに別々に集計します。
+       使ったお金 … 実際に払ったお金です(予定を「支払い済み」にした分も、ここに入ります)
+       収入       … 収入の記録です
+       予定       … まだ払っていない予定(未払い・検討中)を、予定の日で数えます。
+                     支払い済みの予定は「使ったお金」に入っているので、ここでは数えません(二重にしません)。
+     円グラフは、その期間に金額が多い5つのカテゴリーに色をつけ、残りは「ほか」の灰色にまとめます。
+     名前・金額・割合は、色に頼らず、いつも文字でも出します。 */
+  /* ============ 予定と実際の比較 ============
+     予定(plan)ひとつごとに、実際に払った記録(expense, plan.expenseId でつながる)と比べます。
+       差額 = 予定の金額 − 実際の金額  (プラスなら予定より安い、マイナスなら予定より高い)
+     種類: 支払い済み(予定と実際を比べる) / 未購入(まだ払っていない。比べない) / 取り消し(どこにも数えない)
+     支払い済みの分は、実際に払った日(使ったお金の日付)の期間に入れます。未購入・取り消しは予定の日で数えます。
+     「実際」には、予定から作った使ったお金の記録だけを使うので、二重には数えません。 */
+  function cmpItems() {
+    var out = [];
+    state.records.forEach(function (p) {
+      if (p.type !== 'plan') return;
+      var nm = p.name || p.catName;
+      if (p.status === 'paid') {
+        var e = findRec(p.expenseId);
+        if (!e || e.type !== 'expense') return;
+        out.push({ kind: 'paid', plan: p, exp: e, date: e.date, cat: e.catName, name: nm, planned: p.amount, actual: e.amount, diff: p.amount - e.amount });
+      } else {
+        out.push({ kind: p.status === 'cancelled' ? 'cancelled' : 'open', plan: p, date: p.date, cat: p.catName, name: nm, planned: p.amount, actual: 0, diff: 0 });
+      }
+    });
+    return out;
+  }
+  function cmpIn(items, from, to) { return items.filter(function (it) { return it.date >= from && it.date <= to; }); }
+  function cmpCalc(items) {
+    var c = { paid: [], open: [], canc: [], pl: 0, ac: 0, diff: 0, cheap: 0, pricy: 0, same: 0, openSum: 0, cancSum: 0 };
+    items.forEach(function (it) {
+      if (it.kind === 'paid') { c.paid.push(it); c.pl += it.planned; c.ac += it.actual; if (it.diff > 0) c.cheap++; else if (it.diff < 0) c.pricy++; else c.same++; }
+      else if (it.kind === 'open') { c.open.push(it); c.openSum += it.planned; }
+      else { c.canc.push(it); c.cancSum += it.planned; }
+    });
+    c.diff = c.pl - c.ac;
+    return c;
+  }
+  function diffChip(d, short) {
+    if (d > 0) return '<span class="chip ok">▼ 予定より' + (short ? '' : fmt(d) + '円') + '安い</span>';
+    if (d < 0) return '<span class="chip over">▲ 予定より' + (short ? '' : fmt(-d) + '円') + '高い</span>';
+    return '<span class="chip">予定どおり</span>';
+  }
+  function diffCell(d) { return d > 0 ? '<span class="df good">▼' + fmt(d) + '</span>' : d < 0 ? '<span class="df bad">▲' + fmt(-d) + '</span>' : '<span class="df">±0</span>'; }
+  function cmpBlockHtml(planned, actual) {
+    var d = planned - actual;
+    return '<div><span>予定金額</span>' + yen(planned) + '</div><div><span>実際の支出</span>' + yen(actual) + '</div>' +
+      '<div style="margin-top:6px;padding-top:8px;border-top:2px dashed var(--line);align-items:center"><span><b>差額</b> ' + diffChip(d, true) + '</span>' + yen(Math.abs(d), 'mid') + '</div>';
+  }
+  function cmpRowHtml(label, sub, pl, ac, dcell, cls) {
+    return '<div class="cmp-r' + (cls ? ' ' + cls : '') + '"><span>' + label + (sub ? '<small class="cmp-sub">' + sub + '</small>' : '') + '</span><span>' + pl + '</span><span>' + ac + '</span><span>' + dcell + '</span></div>';
+  }
+  function cmpItemRowHtml(it) {
+    var nm = esc(it.name), cat = '<span class="chip">' + esc(it.cat) + '</span>';
+    if (it.kind === 'paid') {
+      return '<li><button type="button" class="row" data-action="edit" data-id="' + it.plan.id + '"><span class="d">' + dlabel(it.date) + '</span><span class="t"><b>' + nm + '</b>' + cat + diffChip(it.diff) + '</span>' +
+        '<span class="amt out">' + yen(it.actual) + '<small class="cmp-sub">予定 ' + fmt(it.planned) + '円</small></span></button></li>';
+    }
+    if (it.kind === 'open') {
+      return '<li><button type="button" class="row" data-action="edit" data-id="' + it.plan.id + '"><span class="d">' + dlabel(it.date) + '</span><span class="t"><b>' + nm + '</b>' + cat + '<span class="chip plan">未購入</span></span>' +
+        '<span class="amt pl">' + yen(it.planned) + '<small class="cmp-sub">まだ払っていない</small></span></button></li>';
+    }
+    return '<li><button type="button" class="row" data-action="edit" data-id="' + it.plan.id + '"><span class="d">' + dlabel(it.date) + '</span><span class="t"><b>' + nm + '</b>' + cat + '<span class="chip">取り消し</span></span>' +
+      '<span class="amt out cmp-x">' + yen(it.planned) + '<small class="cmp-sub" style="text-decoration:none">数えません</small></span></button></li>';
+  }
+  function compareHtml(rng, isMonth) {
+    var a = ui.an, all = cmpItems(), items = cmpIn(all, rng.from, rng.to), c = cmpCalc(items);
+    var title = isMonth ? periodLabel(a.y, a.m) + '（' + rangeText(rng) + '）' : jpDate(rng.from) + '〜' + jpDate(rng.to);
+    var h = '';
+    if (!items.length) {
+      return '<div class="empty"><p>この期間には、予定の記録がありません。<br>「予定」タブで予定を作って、買ったときに「支払い済みにする」を押すと、ここで予定と実際を比べられます。</p></div>';
+    }
+    h += '<div class="card"><div class="sec-head" style="flex-wrap:wrap"><h2>予定と実際</h2><span class="sub">' + title + '</span></div>';
+    if (c.paid.length) {
+      h += '<div class="formula" style="margin:0;padding:0;border-top:0">' + cmpBlockHtml(c.pl, c.ac) + '</div>' +
+        '<p class="sub" style="margin:10px 0 0">買った予定 ' + c.paid.length + '件：予定より安かった ' + c.cheap + '件・高かった ' + c.pricy + '件・予定どおり ' + c.same + '件</p>';
+    } else h += '<p class="sub" style="margin:0">この期間に、支払い済みにした予定はまだありません。</p>';
+    h += '<div class="formula" style="margin-top:10px">' +
+      (c.open.length ? '<div><span>まだ買っていない予定（' + c.open.length + '件）</span>' + yen(c.openSum) + '</div>' : '') +
+      (c.canc.length ? '<div><span>取り消した予定（' + c.canc.length + '件）</span>' + yen(c.cancSum) + '</div>' : '') +
+      '<p class="hint">「実際の支出」は、予定から支払い済みにした記録だけの合計です。まだ買っていない予定と、取り消した予定は、実際の支出には入れていません。支払い済みの分は、実際に払った日で期間を分けています。</p></div></div>';
+
+    // カテゴリー別
+    var map = Object.create(null), order = [];
+    items.forEach(function (it) {
+      if (it.kind === 'cancelled') return;
+      var k = it.cat || 'その他';
+      if (!map[k]) { map[k] = { name: k, pl: 0, ac: 0, n: 0, open: 0, openN: 0 }; order.push(k); }
+      var m = map[k];
+      if (it.kind === 'paid') { m.pl += it.planned; m.ac += it.actual; m.n++; } else { m.open += it.planned; m.openN++; }
+    });
+    var cats = order.map(function (k) { return map[k]; }).sort(function (p, q) { return Math.abs(q.pl - q.ac) - Math.abs(p.pl - p.ac) || (p.name < q.name ? -1 : 1); });
+    if (cats.length) {
+      h += '<div class="card"><div class="sec-head"><h2>カテゴリー別</h2><span class="sub">円</span></div>' + cmpRowHtml('カテゴリー', '', '予定', '実際', '差額', 'h') +
+        cats.map(function (m) {
+          var sub = (m.n ? m.n + '件' : '') + (m.openN ? (m.n ? '・' : '') + '未購入 ' + fmt(m.open) + '円' : '');
+          return m.n ? cmpRowHtml(esc(m.name), sub, fmt(m.pl), fmt(m.ac), diffCell(m.pl - m.ac)) : cmpRowHtml(esc(m.name), sub, '—', '—', '—');
+        }).join('') +
+        '<p class="sub" style="margin:8px 0 0">差額：<b>▼</b>予定より安い　<b>▲</b>予定より高い。買った予定だけを比べています。</p></div>';
+    }
+
+    // 月(期間)ごと
+    var end = periodOf(rng.to), rows = '', i;
+    for (i = 0; i < 6; i++) {
+      var p = periodShift(end, i - 5), pr = periodRange(p.y, p.m), cc = cmpCalc(cmpIn(all, pr.from, pr.to));
+      var on = pr.from <= rng.to && pr.to >= rng.from;
+      var sub = (cc.paid.length ? cc.paid.length + '件' : '') + (cc.open.length ? (cc.paid.length ? '・' : '') + '未購入 ' + fmt(cc.openSum) + '円' : '');
+      rows += cc.paid.length ? cmpRowHtml(p.m + '月分', sub, fmt(cc.pl), fmt(cc.ac), diffCell(cc.diff), on ? 'on' : '')
+        : cmpRowHtml(p.m + '月分', sub, '—', '—', '—', on ? 'on' : '');
+    }
+    h += '<div class="card"><div class="sec-head"><h2>月ごと</h2><span class="sub">1か月（期間）ぶん・円</span></div>' + cmpRowHtml('期間', '', '予定', '実際', '差額', 'h') + rows +
+      '<p class="sub" style="margin:8px 0 0">背景がついている行が、選んでいる期間です。</p></div>';
+
+    // 1件ずつ
+    var list = items.slice().sort(function (p, q) { return p.date < q.date ? 1 : p.date > q.date ? -1 : 0; });
+    h += '<div class="card"><div class="sec-head"><h2>1件ずつ</h2><span class="sub">タップで金額・日付を直せます</span></div><ul class="list">' + list.map(cmpItemRowHtml).join('') + '</ul></div>';
+    return h;
+  }
+
+  /* ============ 節約のヒント(ルールで計算する分析。外部のサービスは使いません) ============
+     この端末の記録だけを使って、その場で計算します。通信も、AIも、追加の費用もありません。
+     守っているルール:
+       ・増えた=無駄遣い、とは決めません。増えた事実と金額だけを出します。
+       ・「大切にしている支出」(初期は 推し活・趣味・交際費・ライブ・イベント・漫画・書籍。設定で変えられます)は、節約の対象にしません。
+       ・食費・日用品・交通費・固定費は「必要な支出」として、減らす提案をしません。
+       ・記録にない理由は推測しません。節約の見込み額には、必ず計算の式をつけます。
+       ・記録が少ないときは、提案を控えます。 */
+  var ESSENTIAL_NAMES = ['食費', '日用品', '交通費', '固定費'];
+  var CHERISH_NAMES = ['推し活', '趣味', '交際費', 'ライブ・イベント', '漫画・書籍'];
+  function cherishedNames() {
+    var c = state.settings.cherished, out = {};
+    if (Array.isArray(c)) c.forEach(function (id) { var k = catById(id); if (k) out[k.name] = 1; });
+    else CHERISH_NAMES.forEach(function (n) { out[n] = 1; });
+    return out;
+  }
+  function toggleCherish(id) {
+    var c = state.settings.cherished;
+    if (!Array.isArray(c)) c = state.categories.filter(function (k) { return k.kind === 'expense' && CHERISH_NAMES.indexOf(k.name) >= 0; }).map(function (k) { return k.id; });
+    var i = c.indexOf(id);
+    if (i >= 0) c.splice(i, 1); else c.push(id);
+    state.settings.cherished = c;
+    save();
+  }
+  function isEssential(name) { return ESSENTIAL_NAMES.indexOf(name) >= 0; }
+  function yenT(n) { return fmt(n) + '円'; }
+  function pctChange(cur, prev) { return prev > 0 ? Math.round((cur - prev) / prev * 100) : null; }
+  function chgText(d) { return d > 0 ? '＋' + fmt(d) : d < 0 ? '−' + fmt(-d) : '±0'; }
+
+  // 今の期間と、ひとつ前の期間。途中の期間は、同じ日数ぶんで比べます(途中なのに先月の全部と比べて「少ない」と見えないように)
+  function tipsPeriods(y, m) {
+    var cur = periodRange(y, m), pp = periodShift({ y: y, m: m }, -1), prev = periodRange(pp.y, pp.m), today = todayStr();
+    var inProg = today >= cur.from && today <= cur.to;
+    var curTo = inProg ? today : cur.to;
+    var n = datesBetween(cur.from, curTo).length;
+    var prevTo = addDays(prev.from, n - 1); if (prevTo > prev.to) prevTo = prev.to;
+    return { cur: { from: cur.from, to: curTo }, prev: { from: prev.from, to: prevTo }, curFull: cur, prevFull: prev, inProg: inProg, ended: today > cur.to, days: n, py: pp.y, pm: pp.m };
+  }
+  function tipsCats(P) {
+    var A = anAggregate('expense', P.cur.from, P.cur.to), B = anAggregate('expense', P.prev.from, P.prev.to), map = Object.create(null), keys = [];
+    A.cats.forEach(function (c) { map[c.name] = { name: c.name, cur: c.amount, curN: c.count, prev: 0, prevN: 0 }; keys.push(c.name); });
+    B.cats.forEach(function (c) {
+      if (!map[c.name]) { map[c.name] = { name: c.name, cur: 0, curN: 0, prev: 0, prevN: 0 }; keys.push(c.name); }
+      map[c.name].prev = c.amount; map[c.name].prevN = c.count;
+    });
+    var rows = keys.map(function (k) { var r = map[k]; r.d = r.cur - r.prev; return r; }).sort(function (p, q) { return Math.abs(q.d) - Math.abs(p.d) || (p.name < q.name ? -1 : 1); });
+    return { rows: rows, curTotal: A.total, prevTotal: B.total, curN: A.count, prevN: B.count };
+  }
+  function biggestRec(name, from, to) {
+    var best = null;
+    state.records.forEach(function (r) { if (r.type === 'expense' && (r.catName || 'その他') === name && r.date >= from && r.date <= to && (!best || r.amount > best.amount)) best = r; });
+    return best;
+  }
+  function fixedActive() { var t = todayStr(); return state.fixed.filter(function (fx) { return fx.active && !(fx.endDate && fx.endDate < t); }); }
+  function fixedYear(fx) { return fx.amount * (fx.cycle === 'weekly' ? 52 : fx.cycle === 'yearly' ? 1 : 12); }
+  function fixedBasis(fx) { return fx.amount.toLocaleString('ja-JP') + '円 × ' + (fx.cycle === 'weekly' ? '52週' : fx.cycle === 'yearly' ? '1回' : '12か月') + ' = ' + yenT(fixedYear(fx)); }
+
+  function tipsCalc(tp) {
+    var P = tipsPeriods(tp.y, tp.m), T = tipsCats(P), ch = cherishedNames();
+    var prevFullN = anAggregate('expense', P.prevFull.from, P.prevFull.to).count;
+    var fixed = fixedActive(), fy = 0;
+    fixed.forEach(function (fx) { fy += fixedYear(fx); });
+    return { tp: tp, P: P, T: T, ch: ch, prevFullN: prevFullN, enough: prevFullN >= 5 && T.curN >= 3 && P.days >= 7, brows: budgetRows(tp.y, tp.m), fixed: fixed, fixedYear: fy };
+  }
+  function tagChips(name, ch) { return (ch[name] ? '<span class="chip warn">大切にしている支出</span>' : '') + (isEssential(name) ? '<span class="chip plan">必要な支出</span>' : ''); }
+
+  // 節約の提案(見込み額には、必ず計算の式をつける)
+  function tipsList(C) {
+    var out = [], T = C.T, P = C.P, ch = C.ch, span = P.inProg ? '今の期間のここまで（' + P.days + '日間）' : '今の期間';
+    // a. 先月より増えた、大切でも必要でもないカテゴリー
+    T.rows.forEach(function (r) {
+      if (r.d <= 0 || ch[r.name] || isEssential(r.name)) return;
+      var pc = pctChange(r.cur, r.prev);
+      if (r.d < 1000 || pc === null || pc < 20) return;
+      var big = biggestRec(r.name, P.cur.from, P.cur.to);
+      out.push({ title: '「' + r.name + '」が先月より増えています',
+        body: (P.inProg ? P.days + '日間で比べると、' : '') + '先月 ' + yenT(r.prev) + ' → 今月 ' + yenT(r.cur) + '（＋' + pc + '%）です。増えた理由は、記録からは分かりません。必要な買い物だったかもしれません。' + (big ? '今月いちばん大きい記録は「' + (big.name || big.catName) + '」' + yenT(big.amount) + '（' + jpMD(big.date) + '）です。' : '') + 'もし見直せそうなものがあれば、先月と同じ水準に戻すことが目安になります。',
+        basis: ['今月 ' + yenT(r.cur) + ' − 先月 ' + yenT(r.prev) + ' = ' + yenT(r.d)], save: r.d, saveLabel: '見込める金額（最大）' });
+    });
+    // b. 予算を超えたカテゴリー
+    (C.brows || []).forEach(function (r) {
+      if (r.state !== 'over') return;
+      var over = -r.left;
+      if (r.overall) { out.push({ title: '全体の予算を超えています', body: '全体の予算 ' + yenT(r.budget) + ' に対して、使ったお金は ' + yenT(r.used) + ' です。カテゴリーごとの予算と、下の先月との比較を見て、どこを調整するか決めてみてください。', basis: ['使った ' + yenT(r.used) + ' − 予算 ' + yenT(r.budget) + ' = ' + yenT(over) + ' オーバー'], save: null }); return; }
+      if (ch[r.label] || isEssential(r.label)) {
+        out.push({ title: '「' + r.label + '」は予算を' + yenT(over) + '超えました', body: (ch[r.label] ? '大切にしている支出' : '必要な支出') + 'なので、無理に減らす必要はありません。今の使い方に予算の金額が合っているか、見直す選択肢もあります。', basis: ['使った ' + yenT(r.used) + ' − 予算 ' + yenT(r.budget) + ' = ' + yenT(over) + ' オーバー'], save: null });
+      } else {
+        out.push({ title: '「' + r.label + '」が予算を' + yenT(over) + '超えました', body: '次の期間に予算内に収めるなら、超えた分が目安になります。', basis: ['使った ' + yenT(r.used) + ' − 予算 ' + yenT(r.budget) + ' = ' + yenT(over)], save: over, saveLabel: '見込める金額（予算内にするなら）' });
+      }
+    });
+    // c. 少額の支出が多いカテゴリー(大切でも必要でもないもの)
+    T.rows.forEach(function (r) {
+      if (ch[r.name] || isEssential(r.name) || r.curN < 5 || r.cur < 3000) return;
+      var avg = Math.round(r.cur / r.curN);
+      if (avg >= 1500) return;
+      var s10 = Math.floor(r.cur * 0.1);
+      out.push({ title: '「' + r.name + '」は、少額の支出が' + r.curN + '件あります', body: span + 'で、1件あたり平均 ' + yenT(avg) + ' です。小さな支出は気づきにくいので、まとめて買えるものがないか、振り返るきっかけにしてみてください。', basis: ['合計 ' + yenT(r.cur) + '（' + r.curN + '件）', 'もし1割を減らせたら：' + yenT(r.cur) + ' × 10% = ' + yenT(s10) + '（1割は目安の仮の数字です）'], save: s10, saveLabel: '見込める金額（目安）' });
+    });
+    // d. 固定費の見直し
+    if (C.fixed.length) {
+      var top = C.fixed.slice().sort(function (p, q) { return fixedYear(q) - fixedYear(p); }).slice(0, 3);
+      out.push({ title: '固定費を、年間で見てみませんか', body: '固定費は毎回の支出が小さく見えても、1年だと大きな金額になります。続けるかどうかは、使い心地を知っているあなたにしか決められないので、候補は決めつけません。使っていないものがあれば、止めると下の金額が減ります。', basis: top.map(function (fx) { return fx.name + '：' + fixedBasis(fx); }), save: null });
+    }
+    // e. 予算が未設定
+    if (!C.brows) out.push({ title: '予算を決めると、振り返りやすくなります', body: '設定でカテゴリーごとの予算を決めると、ここで「予算内か、超えたか」を見られます。大切にしている支出は、多めに決めても大丈夫です。', basis: [], save: null });
+    return out;
+  }
+
+  function reportText(C) {
+    var tp = C.tp, P = C.P, T = C.T, ch = C.ch, st = stats(tp.y, tp.m), lines = [];
+    var curF = anAggregate('expense', P.curFull.from, P.curFull.to), inc = anAggregate('income', P.curFull.from, P.curFull.to);
+    var head = periodLabel(tp.y, tp.m) + '（' + rangeText(P.curFull) + '）';
+    lines.push('家計簿レポート　' + head);
+    lines.push(P.ended ? '（この期間は終わりました）' : P.inProg ? '（途中経過：' + jpMD(P.cur.to) + 'まで）' : '（まだ始まっていない期間です）');
+    lines.push('');
+    lines.push('■ 収支');
+    lines.push('収入 ' + yenT(inc.total) + ' − 使ったお金 ' + yenT(curF.total) + ' = ' + (inc.total - curF.total < 0 ? '−' : '') + yenT(Math.abs(inc.total - curF.total)));
+    if (curF.count) lines.push('使った記録 ' + curF.count + '件。1日あたり平均 ' + yenT(Math.round(curF.total / Math.max(1, datesBetween(P.curFull.from, P.cur.to).length))) + '（' + datesBetween(P.curFull.from, P.cur.to).length + '日間）');
+    lines.push('');
+    lines.push('■ 使ったお金のカテゴリー（多い順）');
+    if (!curF.cats.length) lines.push('記録がありません。');
+    curF.cats.slice(0, 5).forEach(function (c) { lines.push(c.name + '　' + yenT(c.amount) + '（' + pctText(c.amount, curF.total) + '）' + (ch[c.name] ? '　※大切にしている支出' : '')); });
+    var cherTotal = 0; curF.cats.forEach(function (c) { if (ch[c.name]) cherTotal += c.amount; });
+    if (curF.total) lines.push('大切にしている支出の合計：' + yenT(cherTotal) + '（' + pctText(cherTotal, curF.total) + '）');
+    lines.push('');
+    lines.push('■ 先月との比べ方' + (P.inProg ? '（同じ' + P.days + '日間）' : ''));
+    if (!T.prevN) lines.push('先月の記録がまだ少ないため、比べていません。');
+    else {
+      lines.push('先月 ' + yenT(T.prevTotal) + ' → 今月 ' + yenT(T.curTotal) + '（' + chgText(T.curTotal - T.prevTotal) + '円）');
+      var up = T.rows.filter(function (r) { return r.d > 0; }).slice(0, 3), dn = T.rows.filter(function (r) { return r.d < 0; }).sort(function (p, q) { return p.d - q.d; }).slice(0, 3);
+      if (up.length) lines.push('増えた：' + up.map(function (r) { return r.name + ' ' + chgText(r.d) + '円'; }).join('、'));
+      if (dn.length) lines.push('減った：' + dn.map(function (r) { return r.name + ' ' + chgText(r.d) + '円'; }).join('、'));
+      lines.push('増えたことは、悪いこととは限りません。');
+    }
+    lines.push('');
+    lines.push('■ 予算');
+    if (!C.brows) lines.push('予算は決まっていません。');
+    else {
+      var ov = C.brows.filter(function (r) { return r.state === 'over'; }), okr = C.brows.filter(function (r) { return r.state !== 'over'; });
+      lines.push('超えた：' + (ov.length ? ov.map(function (r) { return r.label + ' ' + yenT(-r.left) + 'オーバー'; }).join('、') : 'なし'));
+      lines.push('予算内：' + (okr.length ? okr.map(function (r) { return r.label + ' あと' + yenT(r.left); }).join('、') : 'なし'));
+    }
+    lines.push('');
+    lines.push('■ 固定費');
+    if (!C.fixed.length) lines.push('登録された固定費はありません。');
+    else lines.push('月換算 ' + yenT(Math.round(C.fixedYear / 12)) + '、年間 ' + yenT(C.fixedYear) + '（' + C.fixed.length + '件）');
+    lines.push('');
+    lines.push('■ 予定');
+    var cc = cmpCalc(cmpIn(cmpItems(), P.curFull.from, P.curFull.to));
+    if (!cc.paid.length && !cc.open.length) lines.push('この期間の予定の記録はありません。');
+    if (cc.paid.length) lines.push('買った予定 ' + cc.paid.length + '件：予定 ' + yenT(cc.pl) + ' に対して実際 ' + yenT(cc.ac) + '（差額 ' + yenT(Math.abs(cc.diff)) + (cc.diff > 0 ? '、予定より安い）' : cc.diff < 0 ? '、予定より高い）' : '）'));
+    if (cc.open.length) lines.push('まだ買っていない予定 ' + cc.open.length + '件 ' + yenT(cc.openSum));
+    lines.push('');
+    var tips = tipsList(C).filter(function (t) { return t.save; });
+    lines.push('■ 節約のヒント');
+    if (!C.enough) lines.push('記録がまだ少ないため、提案は控えています。');
+    else if (!tips.length) lines.push('いまのところ、お知らせしたい点はありません。');
+    else tips.forEach(function (t) { lines.push('・' + t.title + '：' + t.basis.join('／') + '　→ ' + yenT(t.save)); });
+    return lines.join('\n');
+  }
+  function reportFor() {
+    var a = ui.an, rng = anRange(), tp = a.mode === 'month' ? { y: a.y, m: a.m } : periodOf(rng.ok ? rng.to : todayStr());
+    return reportText(tipsCalc(tp));
+  }
+
+  function tipsHtml(rng, isMonth) {
+    var a = ui.an, tp = isMonth ? { y: a.y, m: a.m } : periodOf(rng.to), C = tipsCalc(tp), P = C.P, T = C.T, ch = C.ch, h = '';
+    var inN = P.inProg ? '（同じ' + P.days + '日間どうしで比べています）' : '';
+    if (!isMonth) h += '<div class="note b flat">期間を自由に決めているので、いちばん後ろの期間（' + periodLabel(tp.y, tp.m) + '）で見ています。</div>';
+    h += '<div class="note ' + (C.enough ? 'g' : 'y') + ' flat"><b>' + (C.enough ? 'このヒントについて' : '記録がまだ少ないようです') + '</b><br>' +
+      (C.enough ? '記録からの計算だけで出しています。増えた=無駄遣い、とは決めません。「大切にしている支出」は節約の対象にせず、食費などの必要な支出は減らす提案をしません。' :
+        '先月の「使った」記録が' + C.prevFullN + '件、今の期間が' + T.curN + '件（' + P.days + '日間）です。提案は、先月5件以上・今の期間3件以上・7日以上たってから出します。比べる表だけ出しています。') + '</div>';
+
+    // 1・2 先月との比較
+    h += '<div class="card"><div class="sec-head" style="flex-wrap:wrap"><h2>先月と比べる</h2><span class="sub">' + rangeText(P.cur) + ' と ' + rangeText(P.prev) + '</span></div>';
+    if (inN) h += '<p class="sub" style="margin:0 0 6px">' + inN + '</p>';
+    if (!T.rows.length) h += '<p class="sub" style="margin:0">どちらの期間にも、使った記録がありません。</p>';
+    else {
+      h += cmpRowHtml('カテゴリー', '', '先月', '今月', '増減', 'h') + T.rows.map(function (r) {
+        return cmpRowHtml(esc(r.name), '', fmt(r.prev), fmt(r.cur), '<span class="chg">' + chgText(r.d) + '</span>');
+      }).join('') + cmpRowHtml('合計', '', fmt(T.prevTotal), fmt(T.curTotal), '<span class="chg">' + chgText(T.curTotal - T.prevTotal) + '</span>', 'on');
+      h += '<p class="sub" style="margin:8px 0 0">単位は円です。＋は先月より多い、−は少ないことを表します。</p>';
+    }
+    h += '</div>';
+    var ups = T.rows.filter(function (r) { return r.d > 0; }).sort(function (p, q) { return q.d - p.d; });
+    h += '<div class="card"><div class="sec-head"><h2>増えたカテゴリー</h2><span class="sub">' + ups.length + '個</span></div>';
+    if (!ups.length) h += '<p class="sub" style="margin:0">先月より増えたカテゴリーはありません。</p>';
+    else h += '<ul class="list">' + ups.map(function (r) {
+      var pc = pctChange(r.cur, r.prev), big = biggestRec(r.name, P.cur.from, P.cur.to);
+      return '<li class="tip"><h3>' + esc(r.name) + '</h3><div class="chips">' + tagChips(r.name, ch) + '</div>' +
+        '<p>先月 ' + yenT(r.prev) + ' → 今月 ' + yenT(r.cur) + '（＋' + fmt(r.d) + '円' + (pc === null ? '、先月は記録なし' : '、＋' + pc + '%') + '）</p>' +
+        (big ? '<p class="sub">今月いちばん大きい記録：「' + esc(big.name || big.catName) + '」' + yenT(big.amount) + '（' + jpMD(big.date) + '）</p>' : '') +
+        '<p class="sub">' + (ch[r.name] ? '大切にしている支出なので、節約の対象にはしていません。' : isEssential(r.name) ? '必要な支出なので、減らすことはすすめません。' : '増えた理由は、記録からは分かりません。必要な買い物だったかもしれません。') + '</p></li>';
+    }).join('') + '</ul>';
+    h += '</div>';
+
+    // 3・5 予算
+    h += '<div class="card"><div class="sec-head"><h2>予算のようす</h2><span class="sub">' + periodLabel(tp.y, tp.m) + '</span></div>';
+    if (!C.brows) h += '<p class="sub" style="margin:0">この期間には予算がありません。設定で決めると、ここに「超えた」「予算内」が出ます。</p>';
+    else {
+      var ov = C.brows.filter(function (r) { return r.state === 'over'; }), okr = C.brows.filter(function (r) { return r.state !== 'over'; });
+      h += '<h3 style="margin:0 0 4px;font-family:var(--font-display);font-size:15px">予算を超えた（' + ov.length + '）</h3>' +
+        (ov.length ? '<ul class="list">' + ov.map(function (r) { return '<li class="tip"><h3>' + esc(r.label) + ' <span class="chip over">超えました</span></h3><p>使った ' + yenT(r.used) + ' ／ 予算 ' + yenT(r.budget) + ' ／ <b>' + yenT(-r.left) + ' オーバー</b></p><div class="chips">' + (r.overall ? '' : tagChips(r.label, ch)) + '</div></li>'; }).join('') + '</ul>' : '<p class="sub" style="margin:0 0 8px">ありません。</p>') +
+        '<h3 style="margin:10px 0 4px;font-family:var(--font-display);font-size:15px">予算内に収まっている（' + okr.length + '）</h3>' +
+        (okr.length ? '<ul class="list">' + okr.map(function (r) { return '<li class="tip"><h3>' + esc(r.label) + ' ' + (r.state === 'near' ? '<span class="chip warn">もうすぐ</span>' : '<span class="chip ok">余裕あり</span>') + '</h3><p>使った ' + yenT(r.used) + ' ／ 予算 ' + yenT(r.budget) + ' ／ あと ' + yenT(r.left) + '（使用 ' + Math.round(r.rate * 100) + '%）</p></li>'; }).join('') + '</ul>' : '<p class="sub" style="margin:0">ありません。</p>');
+      if (P.inProg) h += '<p class="sub" style="margin:8px 0 0">期間の途中なので、今の時点の金額です。</p>';
+    }
+    h += '</div>';
+
+    // 4 固定費
+    h += '<div class="card"><div class="sec-head"><h2>固定費</h2><span class="sub">月換算と年間</span></div>';
+    if (!C.fixed.length) h += '<p class="sub" style="margin:0">動いている固定費は、まだ登録されていません。設定から登録できます。</p>';
+    else {
+      h += '<ul class="list">' + C.fixed.map(function (fx) { return '<li class="tip"><h3>' + esc(fx.name) + '</h3><p>' + cycleText(fx) + '　' + yenT(fx.amount) + '</p><p class="sub">年間：' + fixedBasis(fx) + '（月換算 約' + yenT(Math.round(fixedYear(fx) / 12)) + '）</p></li>'; }).join('') + '</ul>' +
+        '<div class="formula"><div><span>月換算の合計</span>' + yen(Math.round(C.fixedYear / 12)) + '</div><div><span><b>年間換算の合計</b></span>' + yen(C.fixedYear, 'mid') + '</div>' +
+        '<p class="hint">毎週のものは「×52週」、毎年のものは「1回」、毎月のものは「×12か月」で年間を計算しています。月換算は、年間を12で割った金額です。</p></div>';
+    }
+    h += '</div>';
+
+    // 6・7 提案
+    var list = tipsList(C);
+    h += '<div class="card"><div class="sec-head"><h2>節約のヒント</h2><span class="sub">ルールで計算</span></div>';
+    if (!C.enough) h += '<p class="sub" style="margin:0">記録がまだ少ないため、具体的な提案は控えています。記録がたまると、ここに出ます。</p>';
+    else if (!list.length) h += '<p class="sub" style="margin:0">いまのところ、お知らせしたい点はありません。このままのペースで大丈夫そうです。</p>';
+    else {
+      h += '<ul class="list">' + list.map(function (t) {
+        return '<li class="tip"><h3>' + esc(t.title) + '</h3><p>' + esc(t.body) + '</p>' +
+          (t.basis.length ? '<div class="calc"><b>計算のもと</b>' + t.basis.map(function (b) { return '<span>' + esc(b) + '</span>'; }).join('') + '</div>' : '') +
+          (t.save ? '<div class="save"><span><b>' + esc(t.saveLabel || '見込める金額') + '</b></span>' + yen(t.save, 'mid') + '</div>' : '') + '</li>';
+      }).join('') + '</ul>' +
+        '<p class="sub" style="margin:8px 0 0">見込める金額は、同じ支出を減らせた場合の目安です。内容が重なるものがあるので、合計は出していません。無理のない範囲で、できそうなものだけ試してください。</p>';
+    }
+    h += '</div>';
+
+    // 大切にしている支出の設定
+    var cats = state.categories.filter(function (c) { return c.kind === 'expense'; });
+    h += '<details class="card"><summary>大切にしている支出を選ぶ</summary><p class="sub" style="margin:0 0 8px">ここで選んだカテゴリーは、節約の提案の対象にしません。（初めは、推し活・趣味・交際費・ライブ・イベント・漫画・書籍が選ばれています）</p><div class="chipwrap">' +
+      cats.map(function (c) { return '<button type="button" class="chipbtn" data-action="an-cher" data-id="' + esc(c.id) + '" aria-pressed="' + (ch[c.name] ? 'true' : 'false') + '">' + esc(c.name) + '</button>'; }).join('') + '</div></details>';
+
+    // 8 レポート
+    var endish = P.ended || (P.inProg && Math.round((parseD(P.curFull.to) - parseD(todayStr())) / 86400000) <= 2);
+    h += '<div class="card"><div class="sec-head"><h2>' + (endish ? '月末のレポート' : '途中経過のレポート') + '</h2><span class="sub">' + periodLabel(tp.y, tp.m) + '</span></div>' +
+      '<div class="report">' + esc(reportText(C)) + '</div>' +
+      '<div style="margin-top:12px"><button type="button" class="btn ghost" data-action="an-report">レポートを文字でコピーする</button></div></div>';
+    return h;
+  }
+  function monthEndHtml() {
+    var today = todayStr(), cp = periodOf(today), pr = periodRange(cp.y, cp.m), left = Math.round((parseD(pr.to) - parseD(today)) / 86400000);
+    var target = null, msg = '';
+    if (left <= 2) { target = cp; msg = cp.m + '月分も、もうすぐ終わりです。'; }
+    else if (datesBetween(pr.from, today).length <= 2) { target = periodShift(cp, -1); msg = target.m + '月分が終わりました。'; }
+    if (!target || !state.records.some(function (r) { return r.type === 'expense' || r.type === 'income'; })) return '';
+    return '<div class="note y"><b>' + msg + '</b><br>収支と、お金の使い方のまとめを見られます。' +
+      '<div style="margin-top:10px"><button type="button" class="btn small" data-action="open-tips" data-y="' + target.y + '" data-m="' + target.m + '">月末のレポートを見る</button></div></div>';
+  }
+
+  var AN_LABEL = { expense: '使ったお金', income: '収入', plan: '予定' };
+  var DONUT_MAX = 5, REST_KEY = '\u0000rest';
+
+  function lastDayStr(y, m) { return y + '-' + pad(m) + '-' + pad(new Date(y, m, 0).getDate()); }
+  function jpDate(str) { var p = str.split('-').map(Number); return p[0] + '年' + p[1] + '月' + p[2] + '日'; }
+  function pctText(amount, total) {
+    if (!total) return '0%';
+    var p = amount / total * 100;
+    return p > 0 && p < 1 ? '1%未満' : Math.round(p) + '%';
+  }
+  function compactYen(n) {
+    if (n >= 100000000) return Math.round(n / 1000000) / 100 + '億円';
+    if (n >= 10000) { var v = n / 10000; return (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10) + '万円'; }
+    return fmt(n) + '円';
+  }
+  function anRange() {
+    var a = ui.an;
+    if (a.mode === 'month') { var pr = periodRange(a.y, a.m); return { ok: true, from: pr.from, to: pr.to }; }
+    if (!validDate(a.from) || !validDate(a.to)) return { ok: false, msg: '開始日と終わりの日を選んでください。' };
+    if (a.to < a.from) return { ok: false, msg: '終わりの日は、開始日と同じか、それより後にしてください。' };
+    return { ok: true, from: a.from, to: a.to };
+  }
+  function anPresetRange(p) {
+    var cp = periodOf(todayStr()), cur = periodRange(cp.y, cp.m), q;
+    if (p === 'this') return { from: cur.from, to: cur.to };
+    if (p === 'last') { q = periodShift(cp, -1); return periodRange(q.y, q.m); }
+    if (p === 'three') { q = periodShift(cp, -2); return { from: periodRange(q.y, q.m).from, to: cur.to }; }
+    var yy = new Date().getFullYear();
+    return { from: yy + '-01-01', to: yy + '-12-31' };
+  }
+  // 期間(from〜to、どちらの日も含む)に入る、その種類の記録
+  function anRecords(kind, from, to) {
+    return state.records.filter(function (r) {
+      if (r.date < from || r.date > to) return false;
+      if (kind === 'plan') return isOpenPlan(r);
+      return r.type === kind;
+    });
+  }
+  function anAggregate(kind, from, to) {
+    var list = anRecords(kind, from, to), map = Object.create(null), order = [];
+    list.forEach(function (r) {
+      var k = r.catName || 'その他';
+      if (!map[k]) { map[k] = { name: k, amount: 0, count: 0 }; order.push(k); }
+      map[k].amount += r.amount; map[k].count++;
+    });
+    var cats = order.map(function (k) { return map[k]; }).sort(function (p, q) { return q.amount - p.amount || (p.name < q.name ? -1 : 1); });
+    return { total: sumOf(list), count: list.length, cats: cats };
+  }
+  // 円グラフの切り分け: 多い順に5つまで色つき、残りは「ほか」1つにまとめる
+  function anSlices(cats) {
+    var slices = [], rest = null;
+    cats.forEach(function (c, i) {
+      if (i < DONUT_MAX) slices.push({ key: c.name, name: c.name, amount: c.amount, count: c.count, slot: i + 1 });
+      else {
+        if (!rest) rest = { key: REST_KEY, name: '', amount: 0, count: 0, slot: 0, n: 0, only: c.name };
+        rest.amount += c.amount; rest.count += c.count; rest.n++;
+      }
+    });
+    if (rest) { rest.name = rest.n === 1 ? rest.only : 'ほか' + rest.n + '個'; slices.push(rest); }
+    return slices;
+  }
+  // 棒グラフの6期間分。予定は先を見たいので、開始の期間から6期間先まで。ほかは終わりの期間までの6期間。
+  function anMonths(kind, rng) {
+    var i, out = [], p = kind === 'plan' ? periodOf(rng.from) : periodShift(periodOf(rng.to), -5);
+    for (i = 0; i < 6; i++) {
+      var pr = periodRange(p.y, p.m);
+      out.push({ y: p.y, m: p.m, ym: ymKey(p.y, p.m), inRange: pr.from <= rng.to && pr.to >= rng.from, amount: sumOf(anRecords(kind, pr.from, pr.to)) });
+      p = periodShift(p, 1);
+    }
+    return out;
+  }
+
+  function donutHtml(slices, agg, selCat, selKey, kind) {
+    var R = 70, C = 2 * Math.PI * R, gap = slices.length > 1 ? 2 : 0, pos = 0, arcs = '', desc = [];
+    slices.forEach(function (sl) {
+      var len = sl.amount / agg.total * C, draw = Math.max(len - gap, 0.5), dim = selKey && sl.key !== selKey;
+      arcs += '<circle cx="100" cy="100" r="' + R + '" fill="none" stroke-width="30" style="stroke:var(' + (sl.slot ? '--c' + sl.slot : '--c-other') + ');' + (dim ? 'opacity:.28' : '') + '" ' +
+        'stroke-dasharray="' + draw.toFixed(2) + ' ' + (C - draw).toFixed(2) + '" stroke-dashoffset="' + (-(pos + gap / 2)).toFixed(2) + '"></circle>';
+      pos += len;
+      desc.push(sl.name + ' ' + pctText(sl.amount, agg.total));
+    });
+    var center = selCat
+      ? '<span class="dc-l">' + esc(selCat.name) + '</span>' + yen(selCat.amount, 'dc-n') + '<span class="dc-l">' + pctText(selCat.amount, agg.total) + '</span>'
+      : '<span class="dc-l">合計</span>' + yen(agg.total, 'dc-n') + '<span class="dc-l">' + agg.count + '件</span>';
+    return '<div class="donut"><svg viewBox="0 0 200 200" role="img" aria-label="' + esc(AN_LABEL[kind] + 'のカテゴリー別の割合。' + desc.join('、')) + '"><g transform="rotate(-90 100 100)">' + arcs + '</g></svg>' +
+      '<div class="donut-c">' + center + '</div></div>';
+  }
+  function anRowsHtml(agg, selCat) {
+    var max = agg.cats.length ? agg.cats[0].amount : 1;
+    return '<ul class="list" style="margin-top:4px">' + agg.cats.map(function (c, i) {
+      var slot = i < DONUT_MAX ? i + 1 : 0, w = Math.max(2, Math.round(c.amount / max * 100)), on = !!selCat && selCat.name === c.name;
+      return '<li><button type="button" class="an-row" style="--dot:var(' + (slot ? '--c' + slot : '--c-other') + ')" data-action="an-sel" data-key="' + esc(c.name) + '" aria-pressed="' + on + '">' +
+        '<span class="an-line"><span class="dot" aria-hidden="true"></span><span class="nm">' + esc(c.name) + '<small class="ct">' + c.count + '件</small></span>' + yen(c.amount) + '<span class="pc">' + pctText(c.amount, agg.total) + '</span></span>' +
+        '<span class="track" aria-hidden="true"><span class="fill" style="width:' + w + '%"></span></span></button></li>';
+    }).join('') + '</ul>';
+  }
+  function trendHtml(kind, rng) {
+    var a = ui.an, months = anMonths(kind, rng), max = 0;
+    months.forEach(function (o) { if (o.amount > max) max = o.amount; });
+    var fp = periodOf(kind === 'plan' ? rng.from : rng.to), focusYm = a.bar || ymKey(fp.y, fp.m);
+    var fo = months.filter(function (o) { return o.ym === focusYm; })[0] || months[months.length - 1];
+    var cols = months.map(function (o) {
+      var hh = max > 0 ? Math.round(o.amount / max * 100) : 0;
+      if (o.amount > 0 && hh < 3) hh = 3;
+      var on = a.bar === o.ym, showVal = o.ym === fo.ym;
+      return '<button type="button" class="col" data-action="an-bar" data-ym="' + o.ym + '" data-in="' + (o.inRange ? 1 : 0) + '" aria-pressed="' + on + '" aria-label="' + o.y + '年' + o.m + '月分の' + AN_LABEL[kind] + ' ' + fmt(o.amount) + '円">' +
+        '<span class="cv">' + (showVal ? compactYen(o.amount) : '') + '</span><span class="well"><span class="bar" style="height:' + hh + '%"></span></span><span class="mo">' + o.m + '月分</span></button>';
+    }).join('');
+    var table = months.map(function (o) { return '<div class="kv"><span>' + o.y + '年' + o.m + '月分</span>' + yen(o.amount) + '</div>'; }).join('');
+    return '<div class="card an-' + kind + '"><div class="sec-head"><h2>月ごとの推移</h2><span class="sub">1か月（期間）ぶんの合計</span></div>' +
+      '<p class="label" style="margin:0 0 6px" aria-live="polite">' + fo.y + '年' + fo.m + '月分の' + AN_LABEL[kind] + '　' + yen(fo.amount) + '</p>' +
+      '<div class="cols">' + cols + '</div>' +
+      '<p class="sub" style="margin:6px 0 0">' + (kind === 'plan' ? '予定の日で数えています。' : '') + '濃い色が、選んでいる期間です。棒をタップすると金額が出ます。</p>' +
+      '<details class="tbl"><summary>数字で見る</summary>' + table + '</details></div>';
+  }
+
+  function renderAnalysis() {
+    var a = ui.an, kind = a.kind, isMonth = a.mode === 'month', rng = anRange(), h = '';
+    h += '<div class="seg three" role="tablist" aria-label="分析の見かた">' +
+      '<button type="button" role="tab" data-action="an-view" data-view="stats" aria-selected="' + (a.view !== 'compare' && a.view !== 'tips') + '">集計</button>' +
+      '<button type="button" role="tab" data-action="an-view" data-view="compare" aria-selected="' + (a.view === 'compare') + '">予定と実際</button>' +
+      '<button type="button" role="tab" data-action="an-view" data-view="tips" aria-selected="' + (a.view === 'tips') + '">節約のヒント</button></div>';
+    h += '<div class="card"><div class="sec-head"><h2>期間</h2><span class="sub">月ごと、または自由に</span></div>' +
+      '<div class="seg" role="tablist" aria-label="集計のしかた">' +
+        '<button type="button" role="tab" data-action="an-mode" data-mode="month" aria-selected="' + isMonth + '">月ごと</button>' +
+        '<button type="button" role="tab" data-action="an-mode" data-mode="range" aria-selected="' + !isMonth + '">期間を決める</button></div>';
+    if (isMonth) {
+      h += '<div class="month" style="margin-top:12px"><button type="button" data-action="an-nav" data-dir="-1" aria-label="前の期間">‹</button><h2>' + periodHead(a.y, a.m) + '</h2><button type="button" data-action="an-nav" data-dir="1" aria-label="次の期間">›</button></div>';
+    } else {
+      var presets = [['this', '今の期間'], ['last', '前の期間'], ['three', '直近3期間'], ['year', '今年']];
+      h += '<div class="range-fields" style="margin-top:12px">' +
+          '<div class="field"><label for="an-from">開始日</label><input id="an-from" type="date" data-an="from" value="' + esc(a.from) + '"></div>' +
+          '<div class="field"><label for="an-to">終わりの日</label><input id="an-to" type="date" data-an="to" value="' + esc(a.to) + '"></div></div>' +
+        '<div class="presets" style="margin-top:10px">' + presets.map(function (p) {
+          var r = anPresetRange(p[0]);
+          return '<button type="button" data-action="an-preset" data-p="' + p[0] + '" aria-pressed="' + (r.from === a.from && r.to === a.to) + '">' + p[1] + '</button>';
+        }).join('') + '</div>';
+      if (!rng.ok) h += '<div class="err" role="alert" style="margin-top:8px">' + esc(rng.msg) + '</div>';
+    }
+    h += '</div>';
+    if (!rng.ok) { $('screen-analysis').innerHTML = h; return; }
+    if (a.view === 'compare') { $('screen-analysis').innerHTML = h + compareHtml(rng, isMonth); return; }
+    if (a.view === 'tips') { $('screen-analysis').innerHTML = h + tipsHtml(rng, isMonth); return; }
+
+    var inc = anAggregate('income', rng.from, rng.to), exp = anAggregate('expense', rng.from, rng.to), pln = anAggregate('plan', rng.from, rng.to);
+    var agg = kind === 'expense' ? exp : kind === 'income' ? inc : pln;
+    var title = isMonth ? periodLabel(a.y, a.m) + '（' + rangeText(rng) + '）' : jpDate(rng.from) + '〜' + jpDate(rng.to);
+
+    h += '<div class="trio">' +
+        '<div class="note g"><p class="label">収入</p>' + yen(inc.total) + '</div>' +
+        '<div class="note p"><p class="label">使った</p>' + yen(exp.total) + '</div>' +
+        '<div class="note b"><p class="label">これから払う</p>' + yen(pln.total) + '</div></div>' +
+      '<div class="card"><div class="formula" style="margin:0;padding:0;border-top:0">' +
+        '<div><span>収入</span>' + yen(inc.total) + '</div><div><span>− 使ったお金</span>' + yen(exp.total) + '</div>' +
+        '<div style="margin-top:6px;padding-top:8px;border-top:2px dashed var(--line)"><span><b>収支</b></span>' + yen(inc.total - exp.total, 'mid') + '</div>' +
+        '<p class="hint">「これから払う」は、まだ払っていない予定（' + pln.count + '件）です。収支や「使った」には入れていません。支払い済みにした分は「使った」に入っています。</p></div></div>' +
+      '<div class="seg three" role="tablist" aria-label="集計する種類">' + ['expense', 'income', 'plan'].map(function (k) {
+        return '<button type="button" role="tab" data-action="an-kind" data-kind="' + k + '" aria-selected="' + (kind === k) + '">' + AN_LABEL[k] + '</button>';
+      }).join('') + '</div>';
+
+    h += '<div class="card an-' + kind + '"><div class="sec-head" style="flex-wrap:wrap"><h2>カテゴリー別の' + AN_LABEL[kind] + '</h2><span class="sub">' + title + '</span></div>';
+    if (!agg.cats.length) {
+      h += '<p class="sub" style="margin:0">この期間の' + (kind === 'plan' ? '「予定」（まだ払っていないもの）' : '「' + AN_LABEL[kind] + '」') + 'の記録はありません。</p>';
+    } else {
+      var selCat = a.sel ? (agg.cats.filter(function (c) { return c.name === a.sel; })[0] || null) : null;
+      var selKey = selCat ? (agg.cats.indexOf(selCat) < DONUT_MAX ? selCat.name : REST_KEY) : null;
+      h += donutHtml(anSlices(agg.cats), agg, selCat, selKey, kind) +
+        '<p class="sub" style="margin:0 0 4px;text-align:center">カテゴリーをタップすると、円グラフの中に出ます。</p>' + anRowsHtml(agg, selCat);
+    }
+    h += '</div>' + trendHtml(kind, rng);
+    $('screen-analysis').innerHTML = h;
+  }
+
+  function anRefocus(el) {
+    var list = $('screen-analysis').querySelectorAll('[data-action="' + el.dataset.action + '"]'), i;
+    for (i = 0; i < list.length; i++) {
+      var hit = true;
+      ['key', 'ym', 'mode', 'kind', 'p', 'dir', 'view', 'id'].forEach(function (k) { if ((list[i].dataset[k] || '') !== (el.dataset[k] || '')) hit = false; });
+      if (hit) { if (list[i].focus) list[i].focus(); return; }
+    }
+  }
+  function anAct(act, el) {
+    var an = ui.an, d = el.dataset, nm, ny;
+    if (act === 'an-sel') { an.sel = an.sel === d.key ? null : d.key; renderAnalysis(); anRefocus(el); return; }
+    if (act === 'an-bar') { an.bar = an.bar === d.ym ? null : d.ym; renderAnalysis(); anRefocus(el); return; }
+    if (act === 'an-cher') { toggleCherish(d.id); renderAnalysis(); anRefocus(el); return; }
+    if (act === 'an-report') { var rp = reportFor(); openCopySheet('今期のレポート', 'コピーして、メモアプリなどに貼り付けて保存できます。数字は、この家計簿の記録から計算したものです。', rp, 'report'); return; }
+    if (act === 'an-view') { an.view = d.view === 'compare' ? 'compare' : d.view === 'tips' ? 'tips' : 'stats'; an.sel = null; an.bar = null; renderAnalysis(); anRefocus(el); return; }
+    if (act === 'an-mode') {
+      if (d.mode === 'range' && an.mode === 'month') { var pr0 = periodRange(an.y, an.m); an.from = pr0.from; an.to = pr0.to; }
+      an.mode = d.mode;
+    } else if (act === 'an-nav') {
+      nm = an.m + Number(d.dir); ny = an.y;
+      if (nm < 1) { nm = 12; ny--; } else if (nm > 12) { nm = 1; ny++; }
+      an.y = ny; an.m = nm;
+    } else if (act === 'an-preset') { var pr = anPresetRange(d.p); an.from = pr.from; an.to = pr.to; }
+    else if (act === 'an-kind') an.kind = d.kind;
+    else return;
+    an.sel = null; an.bar = null;
+    renderAnalysis(); anRefocus(el);
+  }
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (!t || !t.dataset || !t.dataset.an) return;
+    ui.an[t.dataset.an] = t.value; ui.an.sel = null; ui.an.bar = null;
+    renderAnalysis();
+    var again = $('an-' + t.dataset.an); if (again && again.focus) again.focus();
+  });
+
+  /* ============ 手帳(月間カレンダーと日付のメモ) ============
+     日付ごとに「使った」「収入」「予定」を別々に数えて、月間ページのように並べます。
+       使った … 実際に払ったお金(予定を「支払い済み」にした分も、ここに入ります)
+       収入   … 収入の記録
+       予定   … まだ払っていない予定(未払い・検討中)。使ったお金の合計には入りません。
+     日付のメモは state.notes = { '2026-10-16': '文章' } に、金額の記録(records)とは別に持ちます。
+     だから、メモを書いても直しても、金額の集計は変わりません。 */
+  function noteOf(date) { var v = state.notes && state.notes[date]; return typeof v === 'string' ? v : ''; }
+  function calAmt(n) {
+    if (n < 10000) return fmt(n);
+    var v = n / 10000;
+    return (v >= 100 ? String(Math.round(v)) : String(Math.round(v * 10) / 10)) + '万';
+  }
+  function calEmpty(date) { return { exp: 0, inc: 0, plan: 0, expN: 0, incN: 0, planN: 0, note: noteOf(date) !== '' }; }
+  function calAdd(o, r) {
+    if (r.type === 'expense') { o.exp += r.amount; o.expN++; }
+    else if (r.type === 'income') { o.inc += r.amount; o.incN++; }
+    else if (isOpenPlan(r)) { o.plan += r.amount; o.planN++; }
+  }
+  function calMonthInfo(y, m) {   // 期間(y年m月分)の、日付ごとの合計
+    var map = {}, pr = periodRange(y, m);
+    datesBetween(pr.from, pr.to).forEach(function (ds) { map[ds] = calEmpty(ds); });
+    state.records.forEach(function (r) { if (Object.prototype.hasOwnProperty.call(map, r.date)) calAdd(map[r.date], r); });
+    return map;
+  }
+  function calDayInfo(date) {
+    var o = calEmpty(date);
+    state.records.forEach(function (r) { if (r.date === date) calAdd(o, r); });
+    return o;
+  }
+  function calLabel(date, o) {
+    var p = date.split('-').map(Number), wd = WEEK[new Date(p[0], p[1] - 1, p[2]).getDay()], parts = [];
+    if (o.expN) parts.push('使った' + fmt(o.exp) + '円');
+    if (o.incN) parts.push('収入' + fmt(o.inc) + '円');
+    if (o.planN) parts.push('予定' + fmt(o.plan) + '円（まだ払っていない）');
+    return p[1] + '月' + p[2] + '日' + wd + '曜日' + (date === todayStr() ? '（今日）' : '') + '。' + (parts.length ? parts.join('、') : '記録なし') + (o.note ? '。メモあり' : '');
+  }
+  function calCellHtml(date, o, sel, today, showMonth) {
+    var h = '<button type="button" class="cal-day' + (date === today ? ' today' : '') + (o.note ? ' has-note' : '') + '" data-action="cal-day" data-date="' + date + '" aria-pressed="' + (date === sel) + '" aria-label="' + esc(calLabel(date, o)) + '">' +
+      '<span class="cd-n">' + (showMonth ? Number(date.slice(5, 7)) + '/' : '') + Number(date.slice(8)) + '</span>';
+    if (o.expN) h += '<span class="cd-v out">−' + calAmt(o.exp) + '</span>';
+    if (o.incN) h += '<span class="cd-v in">+' + calAmt(o.inc) + '</span>';
+    if (o.planN) h += '<span class="cd-v pl"><i>予</i>' + calAmt(o.plan) + '</span>';
+    return h + '</button>';
+  }
+  function calRowHtml(r) {
+    var inc = r.type === 'income';
+    return '<li><button type="button" class="row" data-action="edit" data-id="' + r.id + '"><span class="t"><b>' + esc(r.name || r.catName) + '</b><span class="chip">' + esc(r.catName) + '</span>' + (r.fromPlanId ? '<span class="chip plan">予定から</span>' : '') + (r.fixedId ? '<span class="chip">固定費</span>' : '') + '</span>' +
+      '<span class="amt ' + (inc ? 'in' : 'out') + '">' + (inc ? '+' : '') + yen(r.amount) + '</span>' + (r.memo ? '<span class="rmemo">' + esc(r.memo) + '</span>' : '') + '</button></li>';
+  }
+  function calPlanRowHtml(r) {
+    return '<li><button type="button" class="row plan-row" data-action="edit" data-id="' + r.id + '"><span class="t"><b>' + esc(r.name || r.catName) + '</b><span class="chip ' + (r.status === 'considering' ? 'warn' : 'plan') + '">' + (r.status === 'considering' ? '検討中' : '未払い') + '</span><span class="chip">' + esc(r.catName) + '</span></span>' +
+      '<span class="amt pl">' + yen(r.amount) + '</span>' + (r.memo ? '<span class="rmemo">' + esc(r.memo) + '</span>' : '') + '</button></li>';
+  }
+  function calPanelHtml() {
+    var sel = ui.cal.sel;
+    if (!sel) return '<div class="empty"><p>日付をタップすると、その日の記録とメモが開きます。</p></div>';
+    var o = calDayInfo(sel), p = sel.split('-').map(Number), wd = WEEK[new Date(p[0], p[1] - 1, p[2]).getDay()];
+    var recs = state.records.filter(function (r) { return r.date === sel && (r.type === 'expense' || r.type === 'income'); }).sort(recSort);
+    var plans = state.records.filter(function (r) { return r.date === sel && isOpenPlan(r); }).sort(recSort);
+    var text = noteOf(sel);
+    return '<div class="card day-panel" id="cal-panel">' +
+      '<div class="day-head"><div><p class="eyebrow">' + p[0] + '年' + (sel === todayStr() ? '・今日' : '') + '</p><h2>' + p[1] + '月' + p[2] + '日（' + wd + '）</h2></div>' +
+        '<button type="button" class="btn ghost small" data-action="cal-top">カレンダーへ ↑</button></div>' +
+      '<div class="day-sum"><div class="o"><span>使った</span>' + yen(o.exp) + '</div><div class="i"><span>収入</span>' + yen(o.inc) + '</div><div class="p"><span>予定</span>' + yen(o.plan) + '</div></div>' +
+      '<p class="day-hint">「予定」は、まだ払っていないお金です。「使った」には入りません。</p>' +
+      '<button type="button" class="btn" data-action="cal-add">＋ この日に記録する</button>' +
+      (recs.length ? '<div><h3>この日の記録</h3><ul class="list">' + recs.map(calRowHtml).join('') + '</ul></div>' : '') +
+      (plans.length ? '<div><h3>予定（まだ払っていない）</h3><ul class="list">' + plans.map(calPlanRowHtml).join('') + '</ul></div>' : '') +
+      (!recs.length && !plans.length ? '<p class="sub" style="margin:0">この日の記録はありません。</p>' : '') +
+      '<div class="note y flat daymemo"><label class="label" for="cal-note">この日のメモ</label>' +
+        '<textarea id="cal-note" class="note-pad" data-date="' + sel + '" maxlength="' + NOTE_MAX + '" placeholder="その日のできごと、買いたいもの、気づいたこと…">\n' + esc(text) + '</textarea>' +
+        '<div class="memo-foot"><span id="cal-note-st" role="status">書くと自動で保存されます</span><span id="cal-note-ct">' + text.length + '/' + NOTE_MAX + '</span></div></div>' +
+      '<p class="day-hint">メモは金額の集計には入りません。</p></div>';
+  }
+  function renderCalendar() {
+    var c = ui.cal, y = c.y, m = c.m, today = todayStr(), cp = periodOf(today);
+    var pr = periodRange(y, m), dates = datesBetween(pr.from, pr.to), map = calMonthInfo(y, m), first = parseD(pr.from).getDay();
+    var sx = 0, si = 0, sp = 0, cells = '', i, ds;
+    for (i = 0; i < first; i++) cells += '<span class="cal-blank"></span>';
+    for (i = 0; i < dates.length; i++) {
+      ds = dates[i];
+      sx += map[ds].exp; si += map[ds].inc; sp += map[ds].plan;
+      cells += calCellHtml(ds, map[ds], c.sel, today, i === 0 || ds.slice(8) === '01');
+    }
+    var tail = (7 - (first + dates.length) % 7) % 7;
+    for (i = 0; i < tail; i++) cells += '<span class="cal-blank"></span>';
+    var atToday = y === cp.y && m === cp.m && c.sel === today;
+    $('screen-calendar').innerHTML =
+      '<div class="card cal-card">' +
+        '<div class="month"><button type="button" data-action="cal-nav" data-dir="-1" aria-label="前の期間">‹</button><h2>' + periodHead(y, m) + '</h2><button type="button" data-action="cal-nav" data-dir="1" aria-label="次の期間">›</button></div>' +
+        '<div class="cal-sum"><div><span>使った</span>' + yen(sx) + '</div><div><span>収入</span>' + yen(si) + '</div><div><span>予定</span>' + yen(sp) + '</div></div>' +
+        '<div class="cal-wk" aria-hidden="true">' + WEEK.map(function (w) { return '<span>' + w + '</span>'; }).join('') + '</div>' +
+        '<div class="cal-grid" id="cal-grid">' + cells + '</div>' +
+        '<p class="cal-legend">金額の前の印：<b class="out">−</b>使った　<b class="in">+</b>収入　<b class="pl">予</b>まだ払っていない予定（使ったお金には入りません）。右上の三角はメモがある日です。</p>' +
+        (atToday ? '' : '<div class="cal-tools"><button type="button" class="btn ghost small" data-action="cal-today">今日にもどる</button></div>') +
+      '</div>' + calPanelHtml();
+  }
+  function calRefocus(sel) {
+    var e = $('screen-calendar').querySelector(sel);
+    if (e && e.focus) e.focus({ preventScroll: true });
+  }
+  function calShowPanel() {
+    var pn = $('cal-panel'), mn = $('main');
+    if (!pn) return;
+    var top = pn.getBoundingClientRect().top - mn.getBoundingClientRect().top;
+    if (top > mn.clientHeight * 0.55) {
+      var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      pn.scrollIntoView({ block: 'start', behavior: calm ? 'auto' : 'smooth' });
+    }
+  }
+  function calAct(act, el) {
+    var c = ui.cal, t = new Date();
+    if (act === 'cal-nav') {
+      var n = c.m + Number(el.dataset.dir), y = c.y;
+      if (n < 1) { n = 12; y--; } else if (n > 12) { n = 1; y++; }
+      c.y = y; c.m = n;
+      var cur = periodOf(todayStr());
+      c.sel = (y === cur.y && n === cur.m) ? todayStr() : null;
+      renderCalendar(); calRefocus('[data-action="cal-nav"][data-dir="' + el.dataset.dir + '"]');
+    } else if (act === 'cal-day') {
+      var ds = el.dataset.date;
+      if (!validDate(ds)) return;
+      c.sel = ds; renderCalendar(); calRefocus('[data-date="' + ds + '"]'); calShowPanel();
+    } else if (act === 'cal-today') {
+      var cur2 = periodOf(todayStr());
+      c.y = cur2.y; c.m = cur2.m; c.sel = todayStr();
+      renderCalendar(); $('main').scrollTop = 0;
+    } else if (act === 'cal-top') {
+      $('main').scrollTop = 0; calRefocus('[data-action="cal-nav"][data-dir="-1"]');
+    } else if (act === 'cal-add') {
+      if (!c.sel) return;
+      var d = newDraft('expense'); d.date = c.sel; openSheet(d);
+    }
+  }
+
+  /* 日付のメモ: 入力するたびに state に入れ、少し待ってから(または入力欄を離れたとき)保存します。
+     書いている途中で画面全体を描き直さないので、入力が途切れません。 */
+  var noteTimer = null, notePending = false;
+  function setNote(date, text) {
+    if (text.trim() === '') delete state.notes[date]; else state.notes[date] = text.slice(0, NOTE_MAX);
+  }
+  function noteStatus(msg) { var e = $('cal-note-st'); if (e) e.textContent = msg; }
+  function updateNoteMark(date) {
+    var cell = $('screen-calendar').querySelector('[data-action="cal-day"][data-date="' + date + '"]');
+    if (!cell) return;
+    var o = calDayInfo(date);
+    cell.classList.toggle('has-note', o.note);
+    cell.setAttribute('aria-label', calLabel(date, o));
+  }
+  function onNoteInput(el) {
+    var date = el.dataset.date;
+    if (!validDate(date)) return;
+    setNote(date, el.value);
+    notePending = true;
+    var ct = $('cal-note-ct'); if (ct) ct.textContent = el.value.length + '/' + NOTE_MAX;
+    noteStatus('保存のじゅんび中…');
+    clearTimeout(noteTimer); noteTimer = setTimeout(flushNote, 600);
+  }
+  function flushNote() {
+    clearTimeout(noteTimer); noteTimer = null;
+    if (!notePending) return;
+    notePending = false;
+    save();
+    var ta = $('cal-note');
+    if (ta && validDate(ta.dataset.date)) updateNoteMark(ta.dataset.date);
+    noteStatus(storageOK ? '保存しました ✓' : '保存できていません');
+  }
+
+  function renderSettings() {
+    var kind = ui.catKind, isExp = kind === 'expense';
+    var lastBackup = readMeta().lastBackupAt, snap = readSnapshot(), broken = readBroken();
+    var catRows = state.categories.filter(function (c) { return c.kind === kind; }).map(function (c) {
+      return '<li><button type="button" class="cat-row" data-action="cat-edit" data-id="' + esc(c.id) + '"><span><b>' + esc(c.name) + '</b><small>' + catCount(c.id) + '件の記録</small></span><span class="chev" aria-hidden="true">›</span></button></li>';
+    }).join('');
+    $('screen-settings').innerHTML =
+      periodCardHtml() +
+      '<div class="card"><div class="sec-head"><h2>カテゴリー</h2><span class="sub">タップで編集</span></div>' +
+        '<div class="seg" role="tablist" aria-label="カテゴリーの種類">' +
+          '<button type="button" role="tab" data-action="cat-kind" data-kind="expense" aria-selected="' + isExp + '">使ったお金・予定</button>' +
+          '<button type="button" role="tab" data-action="cat-kind" data-kind="income" aria-selected="' + !isExp + '">収入</button></div>' +
+        '<ul class="list" style="margin:8px 0 12px">' + catRows + '</ul>' +
+        '<button type="button" class="btn" data-action="cat-add">＋ カテゴリーを追加</button></div>' +
+      fixedCardHtml() +
+      budgetSettingsHtml() +
+      '<div class="card"><div class="sec-head"><h2>バックアップと復元</h2></div>' +
+        '<p class="sub" style="margin:0 0 10px">記録 ' + state.records.length + '件、日付のメモ ' + Object.keys(state.notes).length + '件。最後のファイル書き出し：' + (lastBackup ? whenText(lastBackup) : 'まだありません') + '</p>' +
+        '<div class="actions">' +
+          '<button type="button" class="btn" data-action="backup-file">バックアップをファイルに書き出す</button>' +
+          '<button type="button" class="btn ghost" data-action="backup-copy">バックアップを文字でコピーする</button>' +
+          '<button type="button" class="btn ghost" data-action="restore-open">バックアップから復元する</button>' +
+          (snap ? '<button type="button" class="btn ghost" data-action="undo-restore">復元の前の状態に戻す（' + whenText(snap.at) + '）</button>' : '') +
+        '</div></div>' +
+      '<div class="card"><div class="sec-head"><h2>CSVで書き出す</h2></div>' +
+        '<p class="sub" style="margin:0 0 10px">表計算アプリで開ける形式です。使ったお金・収入・予定のすべてが入ります。手帳の日付ごとのメモは、バックアップのほうに入ります。</p>' +
+        '<button type="button" class="btn ghost" data-action="csv">CSVを書き出す</button></div>' +
+      (broken ? '<div class="note p"><b>読み込めなかったデータの控えがあります。</b><br>念のため残してあります。<div style="margin-top:10px"><button type="button" class="btn ghost small" data-action="broken-open">控えを見る・コピーする</button></div></div>' : '') +
+      '<div class="note y taped"><h2 style="margin-bottom:6px">記録の保存について</h2>' +
+        '<ul class="plain">' +
+          '<li>今の記録は <b>' + state.records.length + '件</b>。このiPhoneのSafariの中に保存しています。アプリを閉じても残ります。</li>' +
+          '<li>Safariで開いた場合と、ホーム画面から開いた場合では、保存場所が別々です。使う方を1つに決めて、そちらだけで記録してください。</li>' +
+          '<li>Safariの「履歴とWebサイトデータを消去」をすると、記録も消えます。</li>' +
+          '<li>月に一度は「バックアップをファイルに書き出す」を押して、「ファイル」アプリなどに残してください。復元もここからできます。</li>' +
+        '</ul></div>';
+  }
+
+  function render() {
+    var t = new Date();
+    var hp = periodOf(todayStr());
+    $('monthLabel').textContent = periodLabel(hp.y, hp.m) + '（' + rangeText(periodRange(hp.y, hp.m)) + '）';
+    renderBanner(); renderHome(); renderRecords(); renderCalendar(); renderPlans(); renderAnalysis(); renderSettings();
+  }
+
+  /* ============ 書き込みシート ============ */
+  function newDraft(type) {
+    return { mode: 'add', type: type, amount: '', date: todayStr(), catId: firstCat(type), catName: '', name: '', memo: '', dateKind: 'purchase', status: 'unpaid', errors: {}, confirmDelete: false };
+  }
+  function editDraft(r) {
+    return { mode: 'edit', id: r.id, type: r.type, amount: String(r.amount), date: r.date, catId: r.catId, catName: r.catName, name: r.name || '', memo: r.memo || '', dateKind: r.dateKind || 'purchase', status: r.status || 'unpaid', fromPlanId: r.fromPlanId, errors: {}, confirmDelete: false };
+  }
+  function convertDraft(p) {
+    return { mode: 'convert', id: p.id, planAmount: p.amount, type: 'expense', amount: String(p.amount), date: todayStr(), catId: p.catId, catName: p.catName, name: p.name || '', memo: p.memo || '', errors: {}, confirmDelete: false };
+  }
+  function catOptions(d) {
+    var kind = kindOf(d.type), found = false;
+    var opts = state.categories.filter(function (c) { return c.kind === kind; }).map(function (c) {
+      if (c.id === d.catId) found = true;
+      return '<option value="' + esc(c.id) + '"' + (c.id === d.catId ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+    }).join('');
+    if (!found && d.catId) opts = '<option value="' + esc(d.catId) + '" selected>' + esc(d.catName || 'その他') + '</option>' + opts;
+    return opts;
+  }
+  function openSheet(d) {
+    ui.sheet = d; ui.opener = document.activeElement;
+    $('sheetWrap').hidden = false;
+    renderSheet(d.mode === 'cat-add' || d.mode === 'cat-edit' ? '#f-catname' : d.mode === 'fixed-add' ? '#f-fname' : (d.mode === 'fixed-edit' || d.mode === 'budget') ? null : '#f-amount');
+  }
+  function closeSheet() {
+    ui.sheet = null; $('sheetWrap').hidden = true; $('sheet').innerHTML = '';
+    if (ui.opener && ui.opener.isConnected && ui.opener.focus) ui.opener.focus();
+    ui.opener = null;
+  }
+  function renderSheet(focusSel) {
+    var d = ui.sheet; if (!d) return;
+    if (d.mode === 'cat-add' || d.mode === 'cat-edit') { renderCatSheet(focusSel); return; }
+    if (d.mode === 'restore') { renderRestoreSheet(focusSel); return; }
+    if (d.mode === 'copy') { renderCopySheet(focusSel); return; }
+    if (d.calc) { renderCalcSheet(focusSel); return; }
+    if (d.mode === 'fixed-add' || d.mode === 'fixed-edit') { renderFixedSheet(focusSel); return; }
+    if (d.mode === 'budget') { renderBudgetSheet(focusSel); return; }
+    var e = d.errors || {}, isPlan = d.type === 'plan', add = d.mode === 'add', conv = d.mode === 'convert';
+    var titles = { expense: '使ったお金', income: '収入', plan: '予定' };
+    var title = conv ? '支払い済みにする' : (add ? '記録を追加' : titles[d.type] + 'を編集');
+    var h = '<h2 id="sheetTitle">' + title + '</h2>';
+    if (add) {
+      h += '<div class="seg three" role="group" aria-label="記録の種類">' + ['expense', 'income', 'plan'].map(function (k) {
+        return '<button type="button" data-action="sheet-type" data-type="' + k + '" aria-pressed="' + (d.type === k) + '">' + (k === 'plan' ? '使う予定' : titles[k]) + '</button>';
+      }).join('') + '</div>';
+    }
+    h += '<form id="sheetForm" novalidate style="display:grid;gap:14px">';
+    if (conv) h += '<div class="note b"><b>' + esc(d.name || d.catName) + '</b>を支払い済みにします。「使ったお金」に記録され、予定からは外れます。二重には数えません。<div class="formula" id="cmp-live" aria-live="polite"></div></div>';
+    if (!add && !conv && d.fromPlanId) {
+      var fpl = findRec(d.fromPlanId);
+      h += '<div class="note b">予定から作った記録です。' + (fpl ? '金額や日付を変えると、予定との差額も自動で変わります。' : '') + '削除するときは、予定を「未払い」にもどすか、「取り消し」にするか選べます。' +
+        (fpl ? '<div class="formula" id="cmp-live" aria-live="polite"></div><div style="margin-top:10px"><button type="button" class="btn ghost small" data-action="edit-plan" data-id="' + esc(fpl.id) + '">予定の内容を直す</button></div>' : '') + '</div>';
+    }
+    if (!add && !conv && isPlan && d.status === 'paid') h += '<div class="note b">支払い済みの予定です。ここでは、比べるもとになる「予定の金額・日付」を直せます。実際に払った金額と日付は、「使ったお金」の記録で直します。</div>';
+    h += '<div class="field"><label for="f-amount">' + (conv ? '支払った金額（円）' : '金額（円）') + '</label>' +
+      '<div class="amt-row"><input id="f-amount" class="amount-input" data-field="amount" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="' + esc(d.amount) + '"' + (e.amount ? ' aria-invalid="true"' : '') + ' aria-describedby="amt-preview e-amount"><button type="button" class="btn ghost calc-open" data-action="open-calc">電卓</button></div>' +
+      '<div class="amt-preview" id="amt-preview"></div><div class="err" id="e-amount" role="alert">' + esc(e.amount || '') + '</div></div>';
+    if (isPlan) {
+      h += '<div class="field"><label for="f-datekind">日付の種類</label><select id="f-datekind" data-field="dateKind"><option value="purchase"' + (d.dateKind === 'purchase' ? ' selected' : '') + '>購入予定日</option><option value="due"' + (d.dateKind === 'due' ? ' selected' : '') + '>支払い期限</option></select></div>';
+    }
+    h += '<div class="field"><label for="f-date">' + (conv ? '支払った日' : '日付') + '</label><input id="f-date" data-field="date" type="date" value="' + esc(d.date) + '"' + (e.date ? ' aria-invalid="true"' : '') + ' aria-describedby="e-date"><div class="err" id="e-date" role="alert">' + esc(e.date || '') + '</div></div>';
+    if (!conv) {
+      h += '<div class="field"><label for="f-cat">カテゴリー</label><select id="f-cat" data-field="catId">' + catOptions(d) + '</select></div>';
+      h += '<div class="field"><label for="f-name">名称</label><input id="f-name" data-field="name" type="text" maxlength="60" autocomplete="off" placeholder="' + (d.type === 'income' ? '例：10月分アルバイト' : d.type === 'plan' ? '例：ライブのチケット代' : '例：スーパーで買い出し') + '" value="' + esc(d.name) + '"></div>';
+    }
+    h += '<div class="field"><label for="f-memo">メモ</label><textarea id="f-memo" data-field="memo" maxlength="500" placeholder="あとで見返すメモ（なくてもOK）">' + esc(d.memo) + '</textarea></div>';
+    if (isPlan && !conv) {
+      if (d.status !== 'paid') h += '<div class="field"><label for="f-status">支払い状況</label><select id="f-status" data-field="status">' +
+        opt('unpaid', '未払い（払うことが決まっている）', d.status) + opt('considering', '検討中（買うか迷っている）', d.status) + (add ? '' : opt('cancelled', '取り消し（買わないことにした）', d.status)) + '</select>' + (d.status === 'cancelled' ? '<div class="sub">取り消した予定は、どの合計にも入りません。「未払い」にもどすと、また予定に入ります。</div>' : '') + '</div>';
+    }
+    if (d.mode === 'edit' && d.confirmDelete && d.fromPlanId && findRec(d.fromPlanId)) h += '<div class="note p" role="alert">この記録を削除します。元の予定は、どうしますか？「未払いにもどす」なら、また予定に入ります。「取り消す」なら、どの合計にも入りません。</div>';
+    h += '<div class="actions"><button type="submit" class="btn">' + (conv ? '支払い済みにする' : (add ? '記録する' : '保存する')) + '</button>' +
+      '<button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button>';
+    if (d.mode === 'edit' && !(isPlan && d.status === 'paid')) {
+      var hasPl = !!(d.fromPlanId && findRec(d.fromPlanId));
+      if (d.confirmDelete) {
+        h += hasPl
+          ? '<button type="button" class="btn ghost danger" data-action="delete">削除して、予定を未払いにもどす</button><button type="button" class="btn ghost danger" data-action="delete-cancel">削除して、予定も取り消す</button>'
+          : '<button type="button" class="btn ghost danger" data-action="delete">本当に削除する</button>';
+      } else h += '<button type="button" class="btn ghost danger" data-action="ask-delete">削除する</button>';
+    }
+    h += '</div></form>';
+    $('sheet').innerHTML = h;
+    updatePreview();
+    if (focusSel) { var el = $('sheet').querySelector('[aria-invalid="true"]') || $('sheet').querySelector(focusSel); if (el && el.focus) el.focus(); }
+  }
+  function updatePreview() {
+    var el = $('amt-preview'); if (!el || !ui.sheet) return;
+    var n = parseAmount(ui.sheet.amount);
+    el.textContent = isNaN(n) ? '' : fmt(n) + '円';
+    var cl = $('cmp-live');
+    if (cl) {
+      var d = ui.sheet, pa = d.mode === 'convert' ? d.planAmount : (d.fromPlanId && findRec(d.fromPlanId) ? findRec(d.fromPlanId).amount : null);
+      cl.innerHTML = (pa == null || isNaN(n)) ? '' : cmpBlockHtml(pa, n);
+    }
+  }
+
+  function focusIn(sel) {
+    if (!sel) return;
+    var box = $('sheet');
+    var el = box.querySelector('[aria-invalid="true"]') || box.querySelector(sel);
+    if (el && el.focus) el.focus();
+  }
+
+  /* ============ 電卓 ============
+     式は文字の並び("1200+300×2")として持ち、かけ算・わり算を先に計算します。 */
+  var OPS = { '+': 1, '−': 1, '×': 2, '÷': 2 };
+  function calcEval(expr) {
+    var toks = expr.match(/\d+\.?\d*|\.\d+|[+−×÷]/g) || [];
+    if (toks[0] === '−') toks.unshift('0');
+    while (toks.length && OPS[toks[toks.length - 1]]) toks.pop();
+    if (!toks.length) return { ok: false, msg: '' };
+    var vals = [Number(toks[0])], ops = [], i;
+    if (isNaN(vals[0])) return { ok: false, msg: '式をたしかめてください。' };
+    for (i = 1; i < toks.length; i += 2) {
+      var v = Number(toks[i + 1]);
+      if (!OPS[toks[i]] || isNaN(v)) return { ok: false, msg: '式をたしかめてください。' };
+      ops.push(toks[i]); vals.push(v);
+    }
+    var v2 = [vals[0]], o2 = [];
+    for (i = 0; i < ops.length; i++) {
+      if (ops[i] === '×' || ops[i] === '÷') {
+        var a = v2.pop(), b = vals[i + 1];
+        if (ops[i] === '÷' && b === 0) return { ok: false, msg: '0では割れません。' };
+        v2.push(ops[i] === '×' ? a * b : a / b);
+      } else { o2.push(ops[i]); v2.push(vals[i + 1]); }
+    }
+    var r = v2[0];
+    for (i = 0; i < o2.length; i++) r = o2[i] === '+' ? r + v2[i + 1] : r - v2[i + 1];
+    if (!isFinite(r) || Math.abs(r) > 1e12) return { ok: false, msg: '大きすぎて計算できません。' };
+    return { ok: true, value: Math.round(r * 1e6) / 1e6 };
+  }
+  function calcFmt(v) { return (v < 0 ? '−' : '') + Math.abs(v).toLocaleString('ja-JP', { maximumFractionDigits: 6 }); }
+
+  var CALC_KEYS = [
+    ['C', 'fn', '全部消す', 'C'], ['÷', 'op', '割る'], ['×', 'op', '掛ける'], ['back', 'fn', '1つ戻る', '⌫'],
+    ['7'], ['8'], ['9'], ['−', 'op', '引く'],
+    ['4'], ['5'], ['6'], ['+', 'op', '足す'],
+    ['1'], ['2'], ['3'], ['=', 'eq', '計算する'],
+    ['0'], ['00'], ['.', '', '小数点']
+  ];
+  function renderCalcSheet(focusSel) {
+    var d = ui.sheet, c = d.calc;
+    var r = calcEval(c.expr);
+    var body = c.expr.replace(/^−/, '');
+    var hasOp = /[+−×÷]/.test(body), trailing = !!OPS[c.expr.slice(-1)];
+    var exprText = c.expr.replace(/([+−×÷])/g, ' $1 ').trim();
+    var resultText = r.ok ? (hasOp && !trailing ? '= ' : '') + calcFmt(r.value) + '円' : '0';
+    var keys = CALC_KEYS.map(function (k) {
+      return '<button type="button" class="key ' + (k[1] || '') + '" data-action="calc-key" data-key="' + k[0] + '"' + (k[2] ? ' aria-label="' + k[2] + '"' : '') + '>' + (k[3] || k[0]) + '</button>';
+    }).join('');
+    $('sheet').innerHTML =
+      '<h2 id="sheetTitle">電卓</h2>' +
+      '<div class="calc-display" aria-live="polite"><div class="calc-expr">' + esc(exprText) + '</div><div class="calc-result">' + esc(resultText) + '</div></div>' +
+      '<div class="err" id="e-calc" role="alert">' + esc(c.error || '') + '</div>' +
+      '<div class="keys">' + keys + '</div>' +
+      '<div class="actions"><button type="button" class="btn" data-action="calc-apply">この金額を入力する</button>' +
+      '<button type="button" class="btn ghost" data-action="calc-close">電卓を閉じる</button></div>';
+    focusIn(focusSel);
+  }
+  function calcPress(key) {
+    var c = ui.sheet.calc, e = c.expr, last = e.slice(-1), next = e;
+    c.error = '';
+    var num = (e.match(/[\d.]*$/) || [''])[0];
+    if (key === 'C') next = '';
+    else if (key === 'back') next = e.slice(0, -1);
+    else if (key === '=') {
+      var r = calcEval(e);
+      if (r.ok) next = (r.value < 0 ? '−' : '') + String(Math.abs(r.value));
+      else c.error = r.msg;
+    }
+    else if (OPS[key]) {
+      if (e === '') { if (key === '−') next = '−'; }
+      else if (e !== '−') {
+        var base = last === '.' ? e.slice(0, -1) : e;
+        next = OPS[base.slice(-1)] ? base.slice(0, -1) + key : base + key;
+      }
+    }
+    else if (key === '00') { if (num === '') next = e + '0'; else if (num !== '0') next = e + '00'; }
+    else if (key === '.') { if (num.indexOf('.') < 0) next = e + (num === '' ? '0.' : '.'); }
+    else if (/^\d$/.test(key)) { next = num === '0' ? e.slice(0, -1) + key : e + key; }
+    if (next.length > 40) next = e;
+    c.expr = next;
+    renderCalcSheet('[data-key="' + key + '"]');
+  }
+  function openCalc() {
+    var d = ui.sheet, n = parseAmount(d.amount);
+    d.calc = { expr: isNaN(n) ? '' : String(n), error: '' };
+    renderSheet('[data-key="C"]');
+  }
+  function closeCalc() {
+    ui.sheet.calc = null;
+    renderSheet('[data-action="open-calc"]');
+  }
+  function calcApply() {
+    var d = ui.sheet, c = d.calc, r = calcEval(c.expr);
+    if (!r.ok) { c.error = r.msg || '数字を入力してください。'; renderCalcSheet(); return; }
+    var n = Math.round(r.value);
+    if (n < 1) { c.error = '金額は1円以上にしてください。'; renderCalcSheet(); return; }
+    if (n > MAX_AMOUNT) { c.error = '金額は' + fmt(MAX_AMOUNT) + '円までです。'; renderCalcSheet(); return; }
+    d.amount = String(n); d.calc = null;
+    if (d.errors) delete d.errors.amount;
+    renderSheet('.actions .btn');
+    if (r.value !== n) toast('小数点以下は四捨五入して' + fmt(n) + '円にしました');
+  }
+
+  /* ============ カテゴリー ============
+     記録には、カテゴリーの id と、名前(catName)の両方を残しています。
+     名前を変えたとき: そのカテゴリーの記録の名前も新しくなります(金額・日付はそのまま)。
+     削除したとき: 記録は消さず、その時の名前のまま残ります。 */
+  function normName(s) { return String(s == null ? '' : s).replace(/[\s　]+/g, ' ').trim(); }
+  function catCount(id) { return state.records.filter(function (r) { return r.catId === id; }).length; }
+  function catNameTaken(kind, name, exceptId) {
+    return state.categories.some(function (c) { return c.kind === kind && c.id !== exceptId && c.name === name; });
+  }
+  function addCategory(kind, name) {
+    var c = { id: (kind === 'income' ? 'i' : 'x') + newId(), name: name, kind: kind };
+    state.categories.push(c);
+    return c;
+  }
+  function renameCategory(id, name) {
+    var c = catById(id); if (!c) return;
+    c.name = name;
+    state.records.forEach(function (r) { if (r.catId === id) r.catName = name; });
+    (state.fixed || []).forEach(function (f) { if (f.catId === id) f.catName = name; });
+  }
+  function deleteCategory(id) {
+    var c = catById(id); if (!c) return false;
+    var same = state.categories.filter(function (x) { return x.kind === c.kind; });
+    if (same.length <= 1) return false;
+    state.categories = state.categories.filter(function (x) { return x.id !== id; });
+    return true;
+  }
+  function renderCatSheet(focusSel) {
+    var d = ui.sheet, e = d.errors || {}, add = d.mode === 'cat-add';
+    var kindLabel = d.catKind === 'income' ? '収入' : '使ったお金・予定';
+    var cnt = add ? 0 : catCount(d.id);
+    var h = '<h2 id="sheetTitle">' + (add ? 'カテゴリーを追加' : 'カテゴリーを編集') + '</h2>' +
+      '<form id="sheetForm" novalidate style="display:grid;gap:14px">' +
+      '<div class="note b">「' + kindLabel + '」で選ぶカテゴリーです。</div>' +
+      '<div class="field"><label for="f-catname">名前（20文字まで）</label>' +
+        '<input id="f-catname" data-field="name" type="text" maxlength="20" autocomplete="off" placeholder="例：推し活" value="' + esc(d.name) + '"' + (e.name ? ' aria-invalid="true"' : '') + ' aria-describedby="e-catname">' +
+        '<div class="err" id="e-catname" role="alert">' + esc(e.name || '') + '</div></div>';
+    if (!add) h += '<p class="memo">このカテゴリーを使った記録は' + cnt + '件あります。名前を変えると、過去の記録のカテゴリー名も新しい名前になります。金額や日付は変わりません。</p>';
+    if (d.confirmDelete) h += '<div class="note p" role="alert">「' + esc(d.origName) + '」を削除します。' + cnt + '件の記録は消えず、「' + esc(d.origName) + '」という名前のまま残ります。このカテゴリーは選べなくなり、元に戻せません。</div>';
+    h += '<div class="actions"><button type="submit" class="btn">' + (add ? '追加する' : '保存する') + '</button>' +
+      '<button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button>';
+    if (!add) h += d.confirmDelete
+      ? '<button type="button" class="btn ghost danger" data-action="delete">本当に削除する</button>'
+      : '<button type="button" class="btn ghost danger" data-action="ask-delete">削除する</button>';
+    h += '</div></form>';
+    $('sheet').innerHTML = h;
+    focusIn(focusSel);
+  }
+
+  function submitSheet() {
+    var d = ui.sheet; if (!d) return;
+    if (d.mode === 'cat-add' || d.mode === 'cat-edit') {
+      var nm = normName(d.name), cerr = {};
+      if (!nm) cerr.name = '名前を入力してください。';
+      else if (nm.length > 20) cerr.name = '名前は20文字までです。';
+      else if (catNameTaken(d.catKind, nm, d.id)) cerr.name = '同じ名前のカテゴリーがすでにあります。';
+      if (cerr.name) { d.errors = cerr; renderSheet('#f-catname'); return; }
+      var cmsg;
+      if (d.mode === 'cat-add') { addCategory(d.catKind, nm); cmsg = '「' + nm + '」を追加しました'; }
+      else { renameCategory(d.id, nm); cmsg = '「' + nm + '」に保存しました'; }
+      save(); closeSheet(); render();
+      toast(storageOK ? cmsg : '変更しましたが、保存できていません');
+      return;
+    }
+    if (d.mode === 'fixed-add' || d.mode === 'fixed-edit') { submitFixed(d); return; }
+    if (d.mode === 'budget') { submitBudget(d); return; }
+    var amt = parseAmount(d.amount), errs = {};
+    if (isNaN(amt) || amt < 1) errs.amount = '金額を1円以上の数字で入力してください。';
+    else if (amt > MAX_AMOUNT) errs.amount = '金額は' + fmt(MAX_AMOUNT) + '円までです。';
+    if (!validDate(d.date)) errs.date = '日付を選んでください。';
+    if (errs.amount || errs.date) { d.errors = errs; renderSheet('#f-amount'); return; }
+    var msg;
+    if (d.mode === 'add') { var nr = addRecord(d, amt); msg = '記録しました' + budgetAlert(nr); }
+    else if (d.mode === 'convert') {
+      var pl0 = findRec(d.id), pamt = pl0 ? pl0.amount : amt, ex = convertPlan(d.id, d, amt);
+      msg = ex ? '支払い済みにしました。使ったお金に記録しました。' + (pamt === amt ? '予定どおりでした' : pamt > amt ? '予定より' + fmt(pamt - amt) + '円安く済みました' : '予定より' + fmt(amt - pamt) + '円高くなりました') + budgetAlert(ex) : 'この予定は、すでに支払い済みか、取り消されています';
+    }
+    else {
+      var r = findRec(d.id);
+      if (r) {
+        applyDraft(r, d, amt);
+        if (r.type === 'expense' && r.fromPlanId) { var pp = findRec(r.fromPlanId); if (pp) pp.paidDate = r.date; }   // 支払った日をそろえる
+      }
+      msg = '更新しました';
+    }
+    save(); closeSheet(); render();
+    toast(storageOK ? msg : '記録しましたが、保存できていません', msg.indexOf('予算') >= 0 ? 5200 : 0);
+  }
+
+  /* ============ 画面の切り替えと操作 ============ */
+  var TITLES = { home: 'ホーム', records: '記録', calendar: '手帳', plans: '予定', analysis: '分析', settings: '設定' };
+  function go(tab) {
+    ui.tab = tab;
+    Object.keys(TITLES).forEach(function (k) { $('screen-' + k).hidden = (k !== tab); });
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    $('screenTitle').textContent = TITLES[tab];
+    $('main').scrollTop = 0;
+  }
+  var toastTimer;
+  function toast(msg, ms) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 2800);
+  }
+
+  document.addEventListener('click', function (ev) {
+    if (ev.target === $('sheetWrap')) { if (ui.sheet && ui.sheet.calc) closeCalc(); else closeSheet(); return; }
+    var el = ev.target.closest('[data-action]');
+    if (!el) return;
+    if (notePending) flushNote();
+    var a = el.dataset.action;
+    if (a === 'tab') go(el.dataset.tab);
+    else if (a === 'add') openSheet(newDraft(el.dataset.type));
+    else if (a === 'edit') {
+      var r = findRec(el.dataset.id); if (!r) return;
+      if (r.type === 'plan' && r.status === 'paid') { var e = findRec(r.expenseId); if (e) { openSheet(editDraft(e)); return; } r.status = 'unpaid'; save(); render(); toast('支払い記録が見つからないため、予定を未払いに戻しました'); return; }
+      openSheet(editDraft(r));
+    }
+    else if (a === 'convert') { var p = findRec(el.dataset.id); if (p && isOpenPlan(p)) openSheet(convertDraft(p)); }
+    else if (a === 'edit-plan') { var ep = findRec(el.dataset.id); if (ep && ep.type === 'plan') openSheet(editDraft(ep)); }
+    else if (a === 'cancel-plan') {
+      var cpl = findRec(el.dataset.id);
+      if (cpl && isOpenPlan(cpl)) { cpl.status = 'cancelled'; save(); render(); toast(storageOK ? '予定を取り消しました。「取り消した予定」から、もとにもどせます' : '変更しましたが、保存できていません', 4200); }
+    }
+    else if (a === 'restore-plan') {
+      var rpl = findRec(el.dataset.id);
+      if (rpl && rpl.type === 'plan' && rpl.status === 'cancelled') { rpl.status = 'unpaid'; save(); render(); toast(storageOK ? '予定にもどしました' : '変更しましたが、保存できていません'); }
+    }
+    else if (a === 'open-tips') { ui.an.mode = 'month'; ui.an.y = Number(el.dataset.y); ui.an.m = Number(el.dataset.m); ui.an.view = 'tips'; ui.an.sel = null; ui.an.bar = null; go('analysis'); renderAnalysis(); }
+    else if (a === 'open-compare') { ui.an.view = 'compare'; go('analysis'); renderAnalysis(); }
+    else if (a === 'kind') { ui.kind = el.dataset.kind; renderRecords(); }
+    else if (a === 'month') {
+      var n = ui.ym.m + Number(el.dataset.dir), y = ui.ym.y;
+      if (n < 1) { n = 12; y--; } else if (n > 12) { n = 1; y++; }
+      ui.ym = { y: y, m: n }; renderRecords();
+    }
+    else if (a === 'sheet-type') { ui.sheet.type = el.dataset.type; ui.sheet.catId = firstCat(ui.sheet.type); ui.sheet.catName = ''; renderSheet('[data-action="sheet-type"][aria-pressed="true"]'); }
+    else if (a === 'close-sheet') closeSheet();
+    else if (a === 'ask-delete') {
+      var sd = ui.sheet;
+      if (sd.mode === 'cat-edit' && state.categories.filter(function (x) { return x.kind === sd.catKind; }).length <= 1) {
+        sd.errors = { name: '最後の1つは削除できません。先に別のカテゴリーを追加してください。' };
+        renderSheet('#f-catname');
+      } else { sd.confirmDelete = true; renderSheet('[data-action="delete"]'); }
+    }
+    else if (a === 'delete') {
+      if (ui.sheet.mode === 'budget') { deleteBudgetEntry(ui.sheet.ym); save(); closeSheet(); render(); toast('この期間の予算の設定を取り消しました'); }
+      else if (ui.sheet.mode === 'fixed-edit') { var fxName = ui.sheet.name; deleteFixed(ui.sheet.id); save(); closeSheet(); render(); toast('固定費「' + fxName + '」を削除しました。支払い済みの記録は残っています'); }
+      else if (ui.sheet.mode === 'copy') { try { localStorage.removeItem(KEY + '.broken'); } catch (e4) {} closeSheet(); render(); toast('控えを削除しました'); }
+      else if (ui.sheet.mode === 'cat-edit') {
+        var delName = ui.sheet.origName;
+        if (deleteCategory(ui.sheet.id)) { save(); closeSheet(); render(); toast('「' + delName + '」を削除しました。過去の記録は残っています'); }
+      } else { deleteRecord(ui.sheet.id); save(); closeSheet(); render(); toast('削除しました'); }
+    }
+    else if (a === 'delete-cancel') {
+      var dx = findRec(ui.sheet.id), dpid = dx && dx.fromPlanId;
+      deleteRecord(ui.sheet.id);
+      if (dpid) { var dpl = findRec(dpid); if (dpl && dpl.type === 'plan') dpl.status = 'cancelled'; }
+      save(); closeSheet(); render(); toast('削除して、予定も取り消しました');
+    }
+    else if (a === 'backup-file') saveFile('kakeibo-backup-' + todayStr() + '.json', backupText(), 'backup');
+    else if (a === 'backup-copy') openCopySheet('バックアップをコピー', 'コピーして、メモアプリなどに貼り付けて保存してください。復元するときは、その文字を貼り付けて使います。', backupText());
+    else if (a === 'csv') saveFile('kakeibo-' + todayStr() + '.csv', buildCsv(), 'csv');
+    else if (a === 'restore-open') openSheet({ mode: 'restore', text: '', fileName: '', error: '', parsed: null });
+    else if (a === 'undo-restore') { var sn = readSnapshot(); if (sn) openSheet({ mode: 'restore', text: '', error: '', parsed: sn.res, fromSnapshot: true }); else toast('戻せる控えが見つかりません'); }
+    else if (a === 'restore-check') restoreCheck();
+    else if (a === 'restore-apply') restoreApply();
+    else if (a === 'restore-back') { ui.sheet.parsed = null; renderSheet('#f-file'); }
+    else if (a === 'copy-text') copyText();
+    else if (a === 'broken-open') { var bk = readBroken(); if (bk) openCopySheet('読み込めなかったデータ', 'これは、前回うまく読み込めなかった記録の、そのままの内容です。コピーして、メモアプリなどに残してください。', bk, 'broken'); }
+    else if (a === 'fixed-add') openSheet(newFixedDraft());
+    else if (a === 'fixed-edit') { var fxe = findFixed(el.dataset.id); if (fxe) openSheet(editFixedDraft(fxe)); }
+    else if (a === 'budget-edit') openBudgetSheet(ymKey(ui.budgetYm.y, ui.budgetYm.m));
+    else if (a === 'bmonth') {
+      var bn2 = ui.budgetYm.m + Number(el.dataset.dir), by = ui.budgetYm.y;
+      if (bn2 < 1) { bn2 = 12; by--; } else if (bn2 > 12) { bn2 = 1; by++; }
+      ui.budgetYm = { y: by, m: bn2 }; renderSettings();
+    }
+    else if (a.indexOf('an-') === 0) anAct(a, el);
+    else if (a.indexOf('cal-') === 0) calAct(a, el);
+    else if (a === 'open-calc') openCalc();
+    else if (a === 'calc-key') calcPress(el.dataset.key);
+    else if (a === 'calc-apply') calcApply();
+    else if (a === 'calc-close') closeCalc();
+    else if (a === 'cat-kind') { ui.catKind = el.dataset.kind; renderSettings(); }
+    else if (a === 'cat-add') openSheet({ mode: 'cat-add', catKind: ui.catKind, name: '', errors: {}, confirmDelete: false });
+    else if (a === 'cat-edit') {
+      var cc = catById(el.dataset.id);
+      if (cc) openSheet({ mode: 'cat-edit', id: cc.id, catKind: cc.kind, name: cc.name, origName: cc.name, errors: {}, confirmDelete: false });
+    }
+  });
+  function applyField(el) {
+    var d = ui.sheet; if (!d || !el.dataset) return;
+    if (el.dataset.bcat) { if (d.vals) d.vals[el.dataset.bcat] = el.value; updateBudgetSum(); return; }
+    var f = el.dataset.field; if (!f) return;
+    d[f] = el.value;
+    if (f === 'amount') updatePreview();
+    if (f === 'total') updateBudgetSum();
+    if (d.mode === 'fixed-add' || d.mode === 'fixed-edit') {
+      if (f === 'ymonth') { var mx = MONTH_MAX[Number(el.value) - 1] || 31; if (Number(d.yday) > mx) d.yday = String(mx); }
+      if (f === 'cycle') renderSheet('#f-cycle');
+      else if (f === 'ymonth') renderSheet('#f-ymonth');
+      else if (f === 'endMode') renderSheet('#f-endmode');
+    }
+  }
+  document.addEventListener('input', function (ev) { applyField(ev.target); if (ev.target && ev.target.id === 'cal-note') onNoteInput(ev.target); });
+  document.addEventListener('focusout', function (ev) { if (ev.target && ev.target.id === 'cal-note') flushNote(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) flushNote(); });
+  window.addEventListener('pagehide', flushNote);
+  document.addEventListener('submit', function (ev) { ev.preventDefault(); submitSheet(); });
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (t && t.dataset && t.dataset.setting === 'periodStart') { applyPeriodStart(Number(t.value)); return; }
+    if (t && t.tagName === 'SELECT' && ui.sheet) { applyField(t); return; }
+    if (!t || t.id !== 'f-file' || !ui.sheet || ui.sheet.mode !== 'restore') return;
+    var f = t.files && t.files[0]; if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { ui.sheet.error = 'ファイルが大きすぎます（5MBまで）。'; renderSheet('#f-file'); return; }
+    var fr = new FileReader();
+    fr.onload = function () { if (ui.sheet && ui.sheet.mode === 'restore') { ui.sheet.text = String(fr.result || ''); ui.sheet.fileName = f.name; restoreCheck(); } };
+    fr.onerror = function () { if (ui.sheet && ui.sheet.mode === 'restore') { ui.sheet.error = 'ファイルを読み込めませんでした。'; renderSheet('#f-file'); } };
+    fr.readAsText(f);
+  });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && ui.sheet) { if (ui.sheet.calc) closeCalc(); else closeSheet(); } });
+
+  generateFixed();
+  render();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && generateFixed()) render(); });
+</script>
+
+</body></html>
