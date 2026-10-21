@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset=utf8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-+ZMXy54lkpctpYKu3T8KqQuUs/2wbQPvhWH2q5J5CbQ='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
+<!doctype html><html lang="ja"><head><meta charset=utf8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-inV1kRLUyGXNkFE2E16L+vsEYlLkKxuE68FoUmfZZmc='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
 <title>手帳家計簿</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -634,6 +634,7 @@
     if (!Array.isArray(st.budgets)) st.budgets = [];
     if (!st.stamps || typeof st.stamps !== 'object' || Array.isArray(st.stamps)) st.stamps = {};   // 日付ごとのスタンプ(絵文字) { '2026-10-16': '🌸' }
     if (!Array.isArray(st.quick)) st.quick = [];
+    if (!Array.isArray(st.aliases)) st.aliases = [];   // 名前のまとめ [{id, name, others:[別の呼び方...]}]
     st.records.forEach(function (r) { if (r && r.pay === 'クレジットカード') r.pay = AEON.name; });   // 以前の「クレジットカード」は、イオンカードにします
     st.quick.forEach(function (q) { if (q && q.pay === 'クレジットカード') q.pay = AEON.name; });   // よく使う記録 [{id,name,catId,catName,amount,pay}]
     if (!st.notes || typeof st.notes !== 'object' || Array.isArray(st.notes)) st.notes = {};   // 日付ごとのメモ { '2026-10-16': '文章' }
@@ -1063,10 +1064,18 @@
       if (!q || typeof q.id !== 'string' || !q.id || typeof q.name !== 'string' || !q.name.trim()) continue;
       quick.push({ id: q.id, name: q.name.slice(0, 60), catId: str(q.catId, 80), catName: str(q.catName, 60), amount: intIn(q.amount, 0, MAX_AMOUNT) ? q.amount : 0, pay: PAYS.indexOf(q.pay === 'クレジットカード' ? AEON.name : q.pay) >= 0 ? (q.pay === 'クレジットカード' ? AEON.name : q.pay) : '' });
     }
+    var aliases = [], asrc = Array.isArray(dt.aliases) ? dt.aliases : [];
+    for (i = 0; i < asrc.length && aliases.length < 50; i++) {
+      var al = asrc[i];
+      if (!al || typeof al.id !== 'string' || !al.id || typeof al.name !== 'string' || !al.name.trim() || !Array.isArray(al.others)) continue;
+      var oth = [];
+      al.others.forEach(function (o) { if (typeof o === 'string' && o.trim() && oth.length < 10) oth.push(o.trim().slice(0, 60)); });
+      aliases.push({ id: al.id, name: al.name.trim().slice(0, 60), others: oth });
+    }
     var setOut = { periodStart: pstart };
     if (dt.settings && Array.isArray(dt.settings.cherished)) setOut.cherished = dt.settings.cherished.filter(function (x) { return typeof x === 'string' && seen[x] === true; });
     var at = Date.parse(obj.exportedAt);
-    return { ok: true, state: { version: 1, categories: cats, records: recs, fixed: fixed, budgets: budgets, notes: notes, stamps: stamps, quick: quick, settings: setOut }, info: { at: isNaN(at) ? null : at, expense: cnt.expense, income: cnt.income, plan: cnt.plan, cats: cats.length, fixed: fixed.length, budgets: budgets.length, notes: ncount, periodStart: pstart } };
+    return { ok: true, state: { version: 1, categories: cats, records: recs, fixed: fixed, budgets: budgets, notes: notes, stamps: stamps, quick: quick, aliases: aliases, settings: setOut }, info: { at: isNaN(at) ? null : at, expense: cnt.expense, income: cnt.income, plan: cnt.plan, cats: cats.length, fixed: fixed.length, budgets: budgets.length, notes: ncount, periodStart: pstart } };
   }
   function readSnapshot() {
     try {
@@ -1309,6 +1318,153 @@
     }).join('') + '</ul><p class="sub" style="margin:8px 0 0">使った日の記録はそのままで、ここは引き落とし額の目安です。使ったお金の合計には二重に入りません。</p></div>';
   }
 
+  /* ============ 名前のまとめ・入力候補 ============
+     「ミスド」と「ミスタードーナツ」のように呼び方がちがう名前を、1つの名前として数えます(記録そのものは書き換えません)。
+     名称別の表示・記録の検索・名称ランキング・入力候補で使います。 */
+  function aliasList() { return Array.isArray(state.aliases) ? state.aliases : []; }
+  function normKey(x) { return normQ(x).replace(/\s+/g, ''); }
+  function aliasMap() {
+    var m = Object.create(null);
+    aliasList().forEach(function (g) {
+      var k = normKey(g.name); if (k) m[k] = g;
+      g.others.forEach(function (o) { var ok = normKey(o); if (ok && !m[ok]) m[ok] = g; });
+    });
+    return m;
+  }
+  function nameKey(nm, map) {
+    var raw = String(nm == null ? '' : nm).trim();
+    if (!raw) return { key: '', label: '', group: null };
+    var g = (map || aliasMap())[normKey(raw)];
+    return g ? { key: 'g:' + g.id, label: g.name, group: g } : { key: normKey(raw), label: raw, group: null };
+  }
+  function aliasHay(nm) {   // 検索用: その名前がまとめに入っていれば、まとめの名前と別の呼び方も検索の対象にします
+    var g = nameKey(nm).group;
+    return g ? g.name + ' ' + g.others.join(' ') : '';
+  }
+  function nameSuggestions(type) {
+    var map = aliasMap(), seen = Object.create(null), list = [];
+    state.records.forEach(function (r) {
+      if (r.type !== type || !r.name) return;
+      var nk = nameKey(r.name, map), e = seen[nk.key];
+      if (!e) { e = seen[nk.key] = { label: nk.label, n: 0, last: '', cat: '' }; list.push(e); }
+      e.n++; if (r.date >= e.last) { e.last = r.date; e.cat = r.catName || ''; }
+    });
+    list.sort(function (a, b) { return b.n - a.n || (a.last < b.last ? 1 : a.last > b.last ? -1 : 0); });
+    return list.slice(0, 60);
+  }
+  function nameListHtml(type) {
+    return '<datalist id="name-list">' + nameSuggestions(type).map(function (e) {
+      return '<option value="' + esc(e.label) + '" label="' + esc(e.cat) + '"></option>';
+    }).join('') + '</datalist>';
+  }
+  function autoFillFromName(d) {   // 前に入れた名前をそのまま入れたときだけ、カテゴリーと支払い方法を前回と同じにします(自分で選んだ項目は変えません)
+    var nk = nameKey(d.name); if (!nk.key || d.autoKey === nk.key) return;
+    var map = aliasMap(), hit = null;
+    state.records.forEach(function (r) {
+      if (r.type !== d.type || !r.name || nameKey(r.name, map).key !== nk.key) return;
+      if (!hit || r.date > hit.date || (r.date === hit.date && (r.createdAt || 0) > (hit.createdAt || 0))) hit = r;
+    });
+    if (!hit) return;
+    d.autoKey = nk.key;
+    if (!d.catTouched) { var c = catById(hit.catId); if (c && c.kind === kindOf(d.type)) { d.catId = c.id; d.catName = c.name; var se = $('f-cat'); if (se) se.value = c.id; } }
+    if (d.type === 'expense' && !d.pay && !d.payTouched && hit.pay) { d.pay = hit.pay; var sp = $('f-pay'); if (sp) sp.value = hit.pay; }
+  }
+  function aliasCardHtml() {
+    var rows = aliasList().map(function (g) {
+      return '<li><button type="button" class="cat-row" data-action="alias-edit" data-id="' + esc(g.id) + '"><span><b>' + esc(g.name) + '</b><small>' + esc(g.others.join('、')) + '</small></span></button></li>';
+    }).join('');
+    return '<div class="card"><div class="sec-head"><h2>名前のまとめ</h2><span class="sub">呼び方がちがう名前を1つに</span></div>' +
+      '<p class="sub" style="margin:0 0 8px">たとえば「ミスド」と「ミスタードーナツ」を1つの名前として数えます。記録の名前は書き換えず、名称別・検索・ランキングでまとめて表示します。</p>' +
+      (rows ? '<ul class="list" style="margin:0 0 12px">' + rows + '</ul>' : '') +
+      '<button type="button" class="btn" data-action="alias-add">＋ 名前をまとめる</button></div>';
+  }
+  function aliasChoices(d) {   // まとめる候補: 記録にある名前(よく使う順)
+    var used = Object.create(null), cnt = Object.create(null), order = [];
+    (String(d.aname || '') + '\n' + String(d.aothers || '')).split(/[,，、\n]/).forEach(function (x) { var k = normKey(x); if (k) used[k] = true; });
+    state.records.forEach(function (r) {
+      var nm = String(r.name || '').trim(); if (!nm || (r.type !== 'expense' && r.type !== 'income')) return;
+      if (!cnt[nm]) { cnt[nm] = 0; order.push(nm); } cnt[nm]++;
+    });
+    order = order.filter(function (n) { return !used[normKey(n)]; });
+    order.sort(function (a, b) { return cnt[b] - cnt[a]; });
+    return order.slice(0, 24);
+  }
+  function renderAliasSheet(focusSel) {
+    var d = ui.sheet, e = d.errors || {}, add = d.mode === 'alias-add', ch = aliasChoices(d);
+    var h = '<h2 id="sheetTitle">' + (add ? '名前をまとめる' : 'まとめを編集') + '</h2>' +
+      '<form id="sheetForm" novalidate style="display:grid;gap:14px">' +
+      '<div class="note b">呼び方がちがう名前を、1つの名前として数えます。記録の名前は変わりません。</div>' +
+      '<div class="field"><label for="f-aname">表示する名前</label><input id="f-aname" data-field="aname" type="text" maxlength="60" autocomplete="off" placeholder="例：ミスド" value="' + esc(d.aname) + '"' + (e.name ? ' aria-invalid="true"' : '') + '><div class="err" role="alert">' + esc(e.name || '') + '</div></div>' +
+      '<div class="field"><label for="f-aothers">同じ名前として数えたい呼び方</label><textarea id="f-aothers" data-field="aothers" maxlength="400" placeholder="例：ミスタードーナツ、ミスド店">' + esc(d.aothers) + '</textarea>' +
+        '<div class="sub">「、」「,」か改行で区切ります（10個まで）</div><div class="err" role="alert">' + esc(e.others || '') + '</div></div>';
+    if (ch.length) h += '<div class="field"><span class="lab">記録にある名前（タップで入れます）</span><div class="chipwrap">' + ch.map(function (n) {
+      return '<button type="button" class="chipbtn" data-action="alias-pick" data-n="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join('') + '</div></div>';
+    if (d.confirmDelete) h += '<div class="note p" role="alert">このまとめを削除します。記録の名前は変わりません。</div>';
+    h += '<div class="actions"><button type="submit" class="btn">' + (add ? '追加する' : '保存する') + '</button>' +
+      '<button type="button" class="btn ghost" data-action="close-sheet">キャンセル</button>';
+    if (!add) h += d.confirmDelete ? '<button type="button" class="btn ghost danger" data-action="alias-del">本当に削除する</button>' : '<button type="button" class="btn ghost danger" data-action="alias-ask-del">削除する</button>';
+    h += '</div></form>';
+    $('sheet').innerHTML = h;
+    focusIn(focusSel);
+  }
+  function submitAlias(d) {
+    var nm = String(d.aname || '').trim(), errs = {}, seen = Object.create(null), others = [];
+    if (!nm) errs.name = '表示する名前を入力してください。';
+    String(d.aothers || '').split(/[,，、\n]/).forEach(function (x) {
+      x = x.trim(); var k = normKey(x);
+      if (!x || !k || k === normKey(nm) || seen[k]) return;
+      seen[k] = true; others.push(x.slice(0, 60));
+    });
+    if (!errs.name && !others.length) errs.others = 'まとめたい別の呼び方を1つ以上入れてください。';
+    if (others.length > 10) errs.others = '呼び方は10個までです。';
+    if (!errs.name && !errs.others) {
+      var keys = [normKey(nm)].concat(others.map(normKey));
+      aliasList().forEach(function (g) {
+        if (g.id === d.id || errs.name || errs.others) return;
+        var gk = [normKey(g.name)].concat(g.others.map(normKey));
+        keys.forEach(function (k, i) { if (!errs.name && !errs.others && gk.indexOf(k) >= 0) { errs[i === 0 ? 'name' : 'others'] = '「' + (i === 0 ? nm : others[i - 1]) + '」は、すでに「' + g.name + '」のまとめに入っています。'; } });
+      });
+    }
+    if (d.mode === 'alias-add' && aliasList().length >= 50) errs.name = 'まとめは50件までです。';
+    if (errs.name || errs.others) { d.errors = errs; renderSheet(errs.name ? '#f-aname' : '#f-aothers'); return; }
+    var item = { id: d.mode === 'alias-add' ? newId() : d.id, name: nm.slice(0, 60), others: others };
+    var list = aliasList().slice();
+    if (d.mode === 'alias-add') list.push(item); else list = list.map(function (g) { return g.id === d.id ? item : g; });
+    state.aliases = list; save(); closeSheet(); render();
+    toast(storageOK ? '「' + nm + '」としてまとめました' : 'まとめましたが、保存できていません');
+  }
+  function nameRankHtml(kind, rng, isMonth) {
+    if (kind === 'plan') return '';
+    var map = aliasMap(), a = ui.an;
+    function group(from, to) {
+      var g = Object.create(null), order = [];
+      anRecords(kind, from, to).forEach(function (r) {
+        var nk = nameKey(r.name, map); if (!nk.key) return;
+        if (!g[nk.key]) { g[nk.key] = { label: nk.label, amount: 0, n: 0 }; order.push(nk.key); }
+        g[nk.key].amount += r.amount; g[nk.key].n++;
+      });
+      return { g: g, order: order };
+    }
+    var cur = group(rng.from, rng.to), prev = null;
+    if (isMonth) { var pq = periodShift({ y: a.y, m: a.m }, -1), pr = periodRange(pq.y, pq.m); prev = group(pr.from, pr.to); }
+    var total = 0; cur.order.forEach(function (k) { total += cur.g[k].amount; });
+    var h = '<div class="card"><div class="sec-head"><h2>名前別の' + AN_LABEL[kind] + 'ランキング</h2><span class="sub">合計が多い順</span></div>';
+    if (!cur.order.length) return h + '<p class="sub" style="margin:0">名前を入れた記録がありません。</p></div>';
+    cur.order.sort(function (p, q) { return cur.g[q].amount - cur.g[p].amount || (cur.g[p].label < cur.g[q].label ? -1 : 1); });
+    h += '<ul class="list">' + cur.order.slice(0, 10).map(function (k, i) {
+      var e = cur.g[k], chip = '';
+      if (prev) {
+        var pe = prev.g[k];
+        chip = pe ? '<span class="chip">前の期間より ' + (e.amount >= pe.amount ? '+' : '−') + fmt(e.amount - pe.amount) + '円</span>' : '<span class="chip">前の期間はなし</span>';
+      }
+      return '<li class="kv"><span><b>' + (i + 1) + '. ' + esc(e.label) + '</b><small class="cmp-sub">' + e.n + '回・平均' + yenT(Math.round(e.amount / e.n)) + '・全体の' + pctText(e.amount, total) + '</small></span>' +
+        '<span style="text-align:right"><b>' + yenT(e.amount) + '</b><br>' + chip + '</span></li>';
+    }).join('') + '</ul>';
+    if (cur.order.length > 10) h += '<p class="sub" style="margin:8px 0 0">上位10件までを表示しています（全部で' + cur.order.length + '種類）。</p>';
+    return h + '<p class="sub" style="margin:8px 0 0">増えたことだけでは、無駄遣いとは決められません。好きなお店や大切な支出は、そのまま楽しんでください。</p></div>';
+  }
+
   /* ============ よく使う記録 ============
      名前・カテゴリー・金額・支払い方法を登録しておくと、押すだけで入力画面にそれが入ります(金額は変えられます)。
      記録そのものとは別に、state.quick に持ちます。 */
@@ -1375,7 +1531,7 @@
     var terms = normQ(q).split(/\s+/).filter(Boolean), dots = recDotMap();
     var res = state.records.filter(function (r) {
       if (r.type !== 'expense' && r.type !== 'income') return false;
-      var hay = normQ([r.name, r.memo, r.catName, r.pay, r.amount, r.date].join(' '));
+      var hay = normQ([r.name, aliasHay(r.name), r.memo, r.catName, r.pay, r.amount, r.date].join(' '));
       return terms.every(function (t) { return hay.indexOf(t) >= 0; });
     }).sort(recSort);
     var exp = 0, inc = 0;
@@ -1422,8 +1578,9 @@
     if (!all.length) return h + emptyHtml(m + '月分の' + kindLabel + 'の記録はありません。');
 
     h += '<div class="seg" role="tablist" aria-label="並べ方">' +
-        '<button type="button" role="tab" data-action="rec-view" data-view="date" aria-selected="' + (ui.recView !== 'cat') + '">日付順</button>' +
-        '<button type="button" role="tab" data-action="rec-view" data-view="cat" aria-selected="' + (ui.recView === 'cat') + '">カテゴリー別</button></div>' +
+        '<button type="button" role="tab" data-action="rec-view" data-view="date" aria-selected="' + (ui.recView !== 'cat' && ui.recView !== 'name') + '">日付順</button>' +
+        '<button type="button" role="tab" data-action="rec-view" data-view="cat" aria-selected="' + (ui.recView === 'cat') + '">カテゴリー別</button>' +
+        '<button type="button" role="tab" data-action="rec-view" data-view="name" aria-selected="' + (ui.recView === 'name') + '">名称別</button></div>' +
       '<div class="chipwrap" role="group" aria-label="カテゴリーで絞る">' +
         '<button type="button" class="chipbtn" data-action="rec-cat" data-key="" aria-pressed="' + (!selC) + '">すべて</button>' +
         cats.map(function (c) { return '<button type="button" class="chipbtn" data-action="rec-cat" data-key="' + esc(c.name) + '" aria-pressed="' + (selC === c.name) + '">' + esc(c.name) + ' ' + compactYen(c.amount) + '</button>'; }).join('') + '</div>';
@@ -1432,7 +1589,26 @@
         pays.map(function (c) { return '<button type="button" class="chipbtn" data-action="rec-pay" data-key="' + esc(c.key) + '" aria-pressed="' + (selP === c.key) + '">' + (c.key === '__none' ? '選んでいない' : esc(c.key)) + ' ' + compactYen(c.amount) + '</button>'; }).join('') + '</div>';
 
     if (!list.length) return h + emptyHtml(filt + 'の記録は、この期間にはありません。');
-    if (ui.recView === 'cat') {
+    if (ui.recView === 'name') {
+      /* 名称(お店の名前など)ごとにまとめます。全角・半角や大文字・小文字の違いは同じ名前として数えます。名称が空の記録は「名称なし」です。 */
+      var ng = Object.create(null), nord = [], amap = aliasMap();
+      list.forEach(function (r) {
+        var nm0 = String(r.name || '').trim(), nk = nameKey(nm0, amap), k = nk.key;
+        if (!ng[k]) { ng[k] = { label: nk.group ? nk.group.name : (nm0 || '（名称なし）'), fixed: !!nk.group, spell: Object.create(null), items: [] }; nord.push(k); }
+        ng[k].items.push(r); ng[k].spell[nm0] = (ng[k].spell[nm0] || 0) + 1;
+      });
+      nord.forEach(function (k) {   // 表記ゆれは、いちばん多い書き方で表示します
+        var g = ng[k], best = -1; if (!g.fixed) Object.keys(g.spell).forEach(function (sp) { if (sp && g.spell[sp] > best) { best = g.spell[sp]; g.label = sp; } });
+        g.sum = sumOf(g.items);
+      });
+      nord.sort(function (p, q) { return ng[q].sum - ng[p].sum || (ng[p].label < ng[q].label ? -1 : 1); });
+      h += '<p class="sub" style="margin:0 2px">名前ごとの合計が多い順です。同じ名前の記録がまとまります。</p>';
+      nord.forEach(function (k) {
+        var g = ng[k], n = g.items.length;
+        h += '<section class="tl-day"><div class="tl-head"><span class="tl-date">' + esc(g.label) + '</span><span class="tl-sum">' + yen(g.sum) + '・' + n + '回' + (n > 1 ? '・平均' + yen(Math.round(g.sum / n)) : '') + '</span></div><ul class="tl-list">' +
+          g.items.map(function (r) { return recCardHtml(r, dots, true); }).join('') + '</ul></section>';
+      });
+    } else if (ui.recView === 'cat') {
       var groups = Object.create(null), order = [];
       list.forEach(function (r) { var k = catOf(r); if (!groups[k]) { groups[k] = []; order.push(k); } groups[k].push(r); });
       order.sort(function (p, q) { return sumOf(groups[q]) - sumOf(groups[p]) || (p < q ? -1 : 1); });
@@ -2046,7 +2222,7 @@
       h += donutHtml(anSlices(agg.cats), agg, selCat, selKey, kind) +
         '<p class="sub" style="margin:0 0 4px;text-align:center">カテゴリーをタップすると、円グラフの中に出ます。</p>' + anRowsHtml(agg, selCat);
     }
-    h += '</div>' + trendHtml(kind, rng);
+    h += '</div>' + nameRankHtml(kind, rng, isMonth) + trendHtml(kind, rng);
     $('screen-analysis').innerHTML = h;
   }
 
@@ -2305,6 +2481,7 @@
         '<ul class="list" style="margin:8px 0 12px">' + catRows + '</ul>' +
         '<button type="button" class="btn" data-action="cat-add">＋ カテゴリーを追加</button></div>' +
       quickCardHtml() +
+      aliasCardHtml() +
       fixedCardHtml() +
       budgetSettingsHtml() +
       '<div class="card"><div class="sec-head"><h2>バックアップと復元</h2></div>' +
@@ -2357,7 +2534,7 @@
   function openSheet(d) {
     ui.sheet = d; ui.opener = document.activeElement;
     $('sheetWrap').hidden = false;
-    renderSheet(d.mode === 'cat-add' || d.mode === 'cat-edit' ? '#f-catname' : d.mode === 'fixed-add' ? '#f-fname' : (d.mode === 'fixed-edit' || d.mode === 'budget') ? null : '#f-amount');
+    renderSheet((d.mode === 'alias-add' || d.mode === 'alias-edit') ? '#f-aname' : d.mode === 'cat-add' || d.mode === 'cat-edit' ? '#f-catname' : d.mode === 'fixed-add' ? '#f-fname' : (d.mode === 'fixed-edit' || d.mode === 'budget') ? null : '#f-amount');
   }
   function closeSheet() {
     ui.sheet = null; $('sheetWrap').hidden = true; $('sheet').innerHTML = '';
@@ -2366,6 +2543,7 @@
   }
   function renderSheet(focusSel) {
     var d = ui.sheet; if (!d) return;
+    if (d.mode === 'alias-add' || d.mode === 'alias-edit') { renderAliasSheet(focusSel); return; }
     if (d.mode === 'cat-add' || d.mode === 'cat-edit') { renderCatSheet(focusSel); return; }
     if (d.mode === 'restore') { renderRestoreSheet(focusSel); return; }
     if (d.mode === 'copy') { renderCopySheet(focusSel); return; }
@@ -2399,7 +2577,7 @@
     h += '<div class="field"><label for="f-date">' + (conv ? '支払った日' : '日付') + '</label><input id="f-date" data-field="date" type="date" value="' + esc(d.date) + '"' + (e.date ? ' aria-invalid="true"' : '') + ' aria-describedby="e-date"><div class="err" id="e-date" role="alert">' + esc(e.date || '') + '</div></div>';
     if (!conv) {
       h += '<div class="field"><label for="f-cat">カテゴリー</label><select id="f-cat" data-field="catId">' + catOptions(d) + '</select></div>';
-      h += '<div class="field"><label for="f-name">名称</label><input id="f-name" data-field="name" type="text" maxlength="60" autocomplete="off" placeholder="' + (d.type === 'income' ? '例：10月分アルバイト' : d.type === 'plan' ? '例：ライブのチケット代' : '例：スーパーで買い出し') + '" value="' + esc(d.name) + '"></div>';
+      h += '<div class="field"><label for="f-name">名称</label><input id="f-name" data-field="name" type="text" maxlength="60" autocomplete="off" list="name-list" placeholder="' + (d.type === 'income' ? '例：10月分アルバイト' : d.type === 'plan' ? '例：ライブのチケット代' : '例：スーパーで買い出し') + '" value="' + esc(d.name) + '">' + nameListHtml(d.type) + '</div>';
     }
     if (d.type === 'expense' || conv) h += '<div class="field"><label for="f-pay">支払い方法（なくてもOK）</label><select id="f-pay" data-field="pay"><option value="">選ばない</option>' + PAYS.map(function (p) { return opt(p, p, d.pay); }).join('') + '</select></div>';
     h += '<div class="field"><label for="f-memo">メモ</label><textarea id="f-memo" data-field="memo" maxlength="500" placeholder="あとで見返すメモ（なくてもOK）">' + esc(d.memo) + '</textarea></div>';
@@ -2595,6 +2773,7 @@
 
   function submitSheet() {
     var d = ui.sheet; if (!d) return;
+    if (d.mode === 'alias-add' || d.mode === 'alias-edit') { submitAlias(d); return; }
     if (d.mode === 'cat-add' || d.mode === 'cat-edit') {
       var nm = normName(d.name), cerr = {};
       if (!nm) cerr.name = '名前を入力してください。';
@@ -2692,7 +2871,7 @@
       if (ui.quickDel === el.dataset.id) { state.quick = quickList().filter(function (x) { return x.id !== el.dataset.id; }); ui.quickDel = null; save(); renderSettings(); renderHome(); toast('よく使う記録から削除しました'); }
       else { ui.quickDel = el.dataset.id; renderSettings(); }
     }
-    else if (a === 'rec-view') { ui.recView = el.dataset.view === 'cat' ? 'cat' : 'date'; $('rec-body').innerHTML = recBodyHtml(); recRefocus(el); }
+    else if (a === 'rec-view') { ui.recView = el.dataset.view === 'cat' ? 'cat' : el.dataset.view === 'name' ? 'name' : 'date'; $('rec-body').innerHTML = recBodyHtml(); recRefocus(el); }
     else if (a === 'rec-cat') { ui.recCat = el.dataset.key ? (ui.recCat === el.dataset.key ? null : el.dataset.key) : null; $('rec-body').innerHTML = recBodyHtml(); recRefocus(el); }
     else if (a === 'month') {
       var n = ui.ym.m + Number(el.dataset.dir), y = ui.ym.y;
@@ -2748,6 +2927,20 @@
     else if (a === 'calc-apply') calcApply();
     else if (a === 'calc-close') closeCalc();
     else if (a === 'cat-kind') { ui.catKind = el.dataset.kind; renderSettings(); }
+    else if (a === 'alias-add') openSheet({ mode: 'alias-add', aname: '', aothers: '', errors: {}, confirmDelete: false });
+    else if (a === 'alias-edit') {
+      var ag = aliasList().filter(function (x) { return x.id === el.dataset.id; })[0];
+      if (ag) openSheet({ mode: 'alias-edit', id: ag.id, aname: ag.name, aothers: ag.others.join('、'), errors: {}, confirmDelete: false });
+    }
+    else if (a === 'alias-pick' && ui.sheet) {
+      var cur0 = String(ui.sheet.aothers || '').trim(), nm1 = el.dataset.n;
+      if (!String(ui.sheet.aname || '').trim()) ui.sheet.aname = nm1; else ui.sheet.aothers = cur0 ? cur0 + '、' + nm1 : nm1;
+      renderSheet(String(ui.sheet.aname || '').trim() === nm1 && !cur0 ? '#f-aothers' : '#f-aothers');
+    }
+    else if (a === 'alias-ask-del' && ui.sheet) { ui.sheet.confirmDelete = true; renderSheet('[data-action="alias-del"]'); }
+    else if (a === 'alias-del' && ui.sheet) {
+      var delId = ui.sheet.id; state.aliases = aliasList().filter(function (x) { return x.id !== delId; }); save(); closeSheet(); render(); toast('まとめを削除しました');
+    }
     else if (a === 'cat-add') openSheet({ mode: 'cat-add', catKind: ui.catKind, name: '', errors: {}, confirmDelete: false });
     else if (a === 'cat-edit') {
       var cc = catById(el.dataset.id);
@@ -2759,6 +2952,9 @@
     if (el.dataset.bcat) { if (d.vals) d.vals[el.dataset.bcat] = el.value; updateBudgetSum(); return; }
     var f = el.dataset.field; if (!f) return;
     d[f] = el.value;
+    if (f === 'catId') d.catTouched = true;
+    if (f === 'pay') d.payTouched = true;
+    if (f === 'name' && d.mode === 'add') autoFillFromName(d);
     if (f === 'amount') updatePreview();
     if (f === 'total') updateBudgetSum();
     if (d.mode === 'fixed-add' || d.mode === 'fixed-edit') {
