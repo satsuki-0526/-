@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset=utf8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-/kwBnV+jr2Qevo6wBrCOVv150iMzbvc1b2UkUP3t1f0='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
+<!doctype html><html lang="ja"><head><meta charset=utf8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-NLLrKuc/d235hnparUXJ2ZhBd+yhbGDYejldDsk17PM='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
 <title>手帳家計簿</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -436,7 +436,9 @@
     var p = s.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
     return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
   }
+  var UNDATED = '9999-12-31';   // 「日付未定」の予定にしまっておく日付(いつも一番うしろに並び、どの期間・カレンダーにも入りません)
   function dlabel(s) {
+    if (s === UNDATED) return '日付未定';
     var p = s.split('-').map(Number), d = new Date(p[0], p[1] - 1, p[2]);
     var y = p[0] !== new Date().getFullYear() ? p[0] + '/' : '';
     return y + p[1] + '/' + p[2] + '（' + WEEK[d.getDay()] + '）';
@@ -578,7 +580,7 @@
     rec.catName = c ? c.name : (d.catName || 'その他');
     rec.name = d.name.trim(); rec.memo = d.memo.trim();
     if (rec.type === 'expense' || rec.type === 'plan') { if (PAYS.indexOf(d.pay) >= 0) rec.pay = d.pay; else delete rec.pay; }
-    if (rec.type === 'plan') { rec.dateKind = d.dateKind; if (rec.status !== 'paid') rec.status = d.status; }
+    if (rec.type === 'plan') { rec.dateKind = d.dateKind === 'due' || d.dateKind === 'none' ? d.dateKind : 'purchase'; if (rec.dateKind === 'none') rec.date = UNDATED; if (rec.status !== 'paid') rec.status = d.status; }
   }
   function addRecord(d, amt) {
     var rec = { id: newId(), createdAt: Date.now(), type: d.type };
@@ -1012,7 +1014,7 @@
       var out = { id: r.id, createdAt: typeof r.createdAt === 'number' ? r.createdAt : 0, type: r.type, amount: r.amount, date: r.date, catId: r.catId, catName: r.catName.slice(0, 60), name: str(r.name, 60), memo: str(r.memo, 500) };
       if (r.type === 'plan') {
         if (r.status !== 'unpaid' && r.status !== 'considering' && r.status !== 'paid' && r.status !== 'cancelled') return bad(n + 'の支払い状況が正しくありません。');
-        out.status = r.status; out.dateKind = r.dateKind === 'due' ? 'due' : 'purchase';
+        out.status = r.status; out.dateKind = r.dateKind === 'due' ? 'due' : r.dateKind === 'none' ? 'none' : 'purchase'; if (out.dateKind === 'none') out.date = UNDATED;
         if (validDate(r.paidDate)) out.paidDate = r.paidDate;
         if (typeof r.expenseId === 'string') out.expenseId = r.expenseId;
       }
@@ -1113,8 +1115,8 @@
     }).forEach(function (r) {
       var plan = r.type === 'plan';
       lines.push([
-        csvCell(r.date, false), csvCell(TYPE[r.type] || '', false), csvCell(r.catName, true), csvCell(r.name, true), csvCell(r.amount, false), csvCell(r.memo, true),
-        csvCell(plan ? (STATUS[r.status] || '') : '', false), csvCell(plan ? (r.dateKind === 'due' ? '支払い期限' : '購入予定日') : '', false),
+        csvCell(r.date === UNDATED ? '' : r.date, false), csvCell(TYPE[r.type] || '', false), csvCell(r.catName, true), csvCell(r.name, true), csvCell(r.amount, false), csvCell(r.memo, true),
+        csvCell(plan ? (STATUS[r.status] || '') : '', false), csvCell(plan ? (r.dateKind === 'due' ? '支払い期限' : r.dateKind === 'none' ? '日付未定' : '購入予定日') : '', false),
         csvCell(plan && r.status === 'paid' ? (r.paidDate || '') : '', false), csvCell(r.fromPlanId ? 'はい' : '', false), csvCell(r.fixedId ? 'はい' : '', false), csvCell(r.pay || '', false)
       ].join(','));
     });
@@ -1762,7 +1764,7 @@
     var chip = p.status === 'considering' ? '<span class="chip warn">検討中</span>' : '<span class="chip plan">未払い</span>';
     var late = p.date < today ? '<span class="chip over">日付を過ぎています</span>' : '';
     return '<div class="plan-item"><div class="plan-head"><b>' + esc(p.name || p.catName) + '</b>' + yen(p.amount, 'mid') + '</div>' +
-      '<div class="plan-meta">' + chip + '<span>' + (p.dateKind === 'due' ? '支払い期限' : '購入予定日') + ' ' + dlabel(p.date) + '</span><span class="chip">' + esc(p.catName) + '</span>' + (p.fixedId ? '<span class="chip">固定費</span>' : '') + (p.pay ? '<span class="chip">' + esc(p.pay) + '</span>' : '') + late + '</div>' +
+      '<div class="plan-meta">' + chip + '<span>' + (p.dateKind === 'none' ? '日付未定' : (p.dateKind === 'due' ? '支払い期限' : '購入予定日') + ' ' + dlabel(p.date)) + '</span><span class="chip">' + esc(p.catName) + '</span>' + (p.fixedId ? '<span class="chip">固定費</span>' : '') + (p.pay ? '<span class="chip">' + esc(p.pay) + '</span>' : '') + late + '</div>' +
       (p.memo ? '<p class="memo">' + esc(p.memo) + '</p>' : '') +
       '<div class="plan-actions"><button type="button" class="btn ghost small" data-action="edit" data-id="' + p.id + '">編集</button>' +
       '<button type="button" class="btn small" data-action="convert" data-id="' + p.id + '">支払い済みにする</button>' +
@@ -2645,7 +2647,7 @@
     return { mode: 'add', type: type, pay: '', amount: '', date: todayStr(), catId: firstCat(type), catName: '', name: '', memo: '', dateKind: 'purchase', status: 'unpaid', errors: {}, confirmDelete: false };
   }
   function editDraft(r) {
-    return { mode: 'edit', id: r.id, type: r.type, pay: r.pay || '', amount: String(r.amount), date: r.date, catId: r.catId, catName: r.catName, name: r.name || '', memo: r.memo || '', dateKind: r.dateKind || 'purchase', status: r.status || 'unpaid', fromPlanId: r.fromPlanId, errors: {}, confirmDelete: false };
+    return { mode: 'edit', id: r.id, type: r.type, pay: r.pay || '', amount: String(r.amount), date: r.date === UNDATED ? todayStr() : r.date, catId: r.catId, catName: r.catName, name: r.name || '', memo: r.memo || '', dateKind: r.dateKind || 'purchase', status: r.status || 'unpaid', fromPlanId: r.fromPlanId, errors: {}, confirmDelete: false };
   }
   function convertDraft(p) {
     return { mode: 'convert', id: p.id, pay: PAYS.indexOf(p.pay) >= 0 ? p.pay : '', planAmount: p.amount, type: 'expense', amount: String(p.amount), date: todayStr(), catId: p.catId, catName: p.catName, name: p.name || '', memo: p.memo || '', errors: {}, confirmDelete: false };
@@ -2701,9 +2703,9 @@
       '<div class="amt-row"><input id="f-amount" class="amount-input" data-field="amount" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="' + esc(d.amount) + '"' + (e.amount ? ' aria-invalid="true"' : '') + ' aria-describedby="amt-preview e-amount"><button type="button" class="btn ghost calc-open" data-action="open-calc">電卓</button></div>' +
       '<div class="amt-preview" id="amt-preview"></div><div class="err" id="e-amount" role="alert">' + esc(e.amount || '') + '</div></div>';
     if (isPlan) {
-      h += '<div class="field"><label for="f-datekind">日付の種類</label><select id="f-datekind" data-field="dateKind"><option value="purchase"' + (d.dateKind === 'purchase' ? ' selected' : '') + '>購入予定日</option><option value="due"' + (d.dateKind === 'due' ? ' selected' : '') + '>支払い期限</option></select></div>';
+      h += '<div class="field"><label for="f-datekind">日付の種類</label><select id="f-datekind" data-field="dateKind"><option value="purchase"' + (d.dateKind === 'purchase' ? ' selected' : '') + '>購入予定日</option><option value="due"' + (d.dateKind === 'due' ? ' selected' : '') + '>支払い期限</option><option value="none"' + (d.dateKind === 'none' ? ' selected' : '') + '>日付未定（まだ決まっていない）</option></select></div>';
     }
-    h += '<div class="field"><label for="f-date">' + (conv ? '支払った日' : '日付') + '</label><input id="f-date" data-field="date" type="date" value="' + esc(d.date) + '"' + (e.date ? ' aria-invalid="true"' : '') + ' aria-describedby="e-date"><div class="err" id="e-date" role="alert">' + esc(e.date || '') + '</div></div>';
+    if (!(isPlan && !conv && d.dateKind === 'none')) h += '<div class="field"><label for="f-date">' + (conv ? '支払った日' : '日付') + '</label><input id="f-date" data-field="date" type="date" value="' + esc(d.date) + '"' + (e.date ? ' aria-invalid="true"' : '') + ' aria-describedby="e-date"><div class="err" id="e-date" role="alert">' + esc(e.date || '') + '</div></div>';
     if (!conv) {
       h += '<div class="field"><label for="f-cat">カテゴリー</label><select id="f-cat" data-field="catId">' + catOptions(d) + '</select></div>';
       h += '<div class="field"><label for="f-name">名称</label><input id="f-name" data-field="name" type="text" maxlength="60" autocomplete="off" list="name-list" placeholder="' + (d.type === 'income' ? '例：10月分アルバイト' : d.type === 'plan' ? '例：ライブのチケット代' : '例：スーパーで買い出し') + '" value="' + esc(d.name) + '">' + nameListHtml(d.type) + '</div>';
@@ -2923,7 +2925,8 @@
     var amt = parseAmount(d.amount), errs = {};
     if (isNaN(amt) || amt < 1) errs.amount = '金額を1円以上の数字で入力してください。';
     else if (amt > MAX_AMOUNT) errs.amount = '金額は' + fmt(MAX_AMOUNT) + '円までです。';
-    if (!validDate(d.date)) errs.date = '日付を選んでください。';
+    var undatedPlan = d.type === 'plan' && d.mode !== 'convert' && d.dateKind === 'none';
+    if (!undatedPlan && !validDate(d.date)) errs.date = '日付を選んでください。';
     if (errs.amount || errs.date) { d.errors = errs; renderSheet('#f-amount'); return; }
     var msg;
     if (d.mode === 'add') { var nr = addRecord(d, amt); msg = '記録しました' + budgetAlert(nr); }
@@ -3093,6 +3096,7 @@
     var f = el.dataset.field; if (!f) return;
     d[f] = el.value;
     if (f === 'catId') d.catTouched = true;
+    if (f === 'dateKind' && d.type === 'plan') { if (d.dateKind !== 'none' && !validDate(d.date)) d.date = todayStr(); renderSheet('#f-datekind'); return; }
     if (f === 'pay') { d.payTouched = true; updatePayHint(); }
     if (f === 'name' && d.mode === 'add') autoFillFromName(d);
     if (f === 'amount') updatePreview();
