@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset=utf8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-um/amA+f78sF/7hQRbAoJGw1jJsdq9zFgAglKl7OS4M='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
+<!doctype html><html lang="ja"><head><meta charset=utf8><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-/kwBnV+jr2Qevo6wBrCOVv150iMzbvc1b2UkUP3t1f0='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>手帳家計簿</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="家計簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F7F0E0"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body>
 <title>手帳家計簿</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -577,7 +577,7 @@
     rec.amount = amt; rec.date = d.date; rec.catId = d.catId;
     rec.catName = c ? c.name : (d.catName || 'その他');
     rec.name = d.name.trim(); rec.memo = d.memo.trim();
-    if (rec.type === 'expense') { if (PAYS.indexOf(d.pay) >= 0) rec.pay = d.pay; else delete rec.pay; }
+    if (rec.type === 'expense' || rec.type === 'plan') { if (PAYS.indexOf(d.pay) >= 0) rec.pay = d.pay; else delete rec.pay; }
     if (rec.type === 'plan') { rec.dateKind = d.dateKind; if (rec.status !== 'paid') rec.status = d.status; }
   }
   function addRecord(d, amt) {
@@ -1018,7 +1018,7 @@
       }
       if (r.type === 'expense' && typeof r.fromPlanId === 'string') out.fromPlanId = r.fromPlanId;
       if (r.type === 'expense' && r.pay === 'クレジットカード') r.pay = AEON.name;
-      if (r.type === 'expense' && PAYS.indexOf(r.pay) >= 0) out.pay = r.pay;
+      if ((r.type === 'expense' || r.type === 'plan') && PAYS.indexOf(r.pay) >= 0) out.pay = r.pay;
       if (typeof r.fixedId === 'string' && r.fixedId) out.fixedId = r.fixedId;
       if (r.type === 'plan' && validDate(r.occ)) out.occ = r.occ;
       recs.push(out);
@@ -1074,7 +1074,7 @@
       aliases.push({ id: al.id, name: al.name.trim().slice(0, 60), others: oth });
     }
     var wallets = {}, wsrc = dt.wallets && typeof dt.wallets === 'object' && !Array.isArray(dt.wallets) ? dt.wallets : {};
-    ['cash', 'paypay'].forEach(function (wk) {
+    ['cash', 'paypay', 'suica'].forEach(function (wk) {
       var w = wsrc[wk];
       if (!w || typeof w !== 'object' || !intIn(w.base, -MAX_AMOUNT, MAX_AMOUNT) || typeof w.setAt !== 'number' || !isFinite(w.setAt) || !validDate(w.setDate)) return;
       var mv = [], msrc = Array.isArray(w.moves) ? w.moves : [];
@@ -1482,7 +1482,8 @@
      チャージや引き出しは「入れた・出した」で足し引きします。記録の金額や日付は変えません。 */
   var WALLETS = [
     { key: 'cash', pay: '現金', name: '現金', setHint: '千円単位でOKです（例：5000）。' },
-    { key: 'paypay', pay: 'PayPay', name: 'PayPay', setHint: '1円単位で入れます（例：12345）。' }
+    { key: 'paypay', pay: 'PayPay', name: 'PayPay', setHint: '1円単位で入れます（例：12345）。' },
+    { key: 'suica', pay: 'Suica', name: 'Suica', setHint: '1円単位で入れます（例：2480）。' }
   ];
   function walletDef(key) { for (var i = 0; i < WALLETS.length; i++) if (WALLETS[i].key === key) return WALLETS[i]; return null; }
   function walletOfPay(pay) { for (var i = 0; i < WALLETS.length; i++) if (WALLETS[i].pay === pay) return WALLETS[i]; return null; }
@@ -1495,11 +1496,27 @@
     state.records.forEach(function (r) { if (r.type === 'expense' && r.pay === def.pay && walletCounts(w, r)) bal -= r.amount; });
     return bal;
   }
+  function walletPlanned(key) {
+    var def = walletDef(key), sum = 0, n = 0; if (!def) return { sum: 0, n: 0 };
+    state.records.forEach(function (r) { if (r.type === 'plan' && r.status === 'unpaid' && r.pay === def.pay) { sum += r.amount; n++; } });
+    return { sum: sum, n: n };
+  }
+  function walletPlanLine(d) {
+    var b = walletBalance(d.key), pl = walletPlanned(d.key); if (b == null || !pl.n) return '';
+    var after = b - pl.sum;
+    return '<small class="cmp-sub">予定 ' + pl.n + '件（' + fmt(pl.sum) + '円）を払うと ' + sgYen(after) + (after < 0 ? '　足りなくなりそうです。チャージが必要かも' : '') + '</small>';
+  }
   function sgYen(n) { return (n < 0 ? '−' : '') + fmt(n) + '円'; }
   function updatePayHint() {
     var el = $('pay-hint'); if (!el || !ui.sheet) return;
     var d = ui.sheet, def = walletOfPay(d.pay);
     if (!def) { el.textContent = ''; return; }
+    if (d.type === 'plan' && d.mode !== 'convert') {
+      if (!walletRaw(def.key)) { el.textContent = def.name + 'の残高を設定で登録すると、予定を払ったあとの残高が出ます。'; return; }
+      var bp = walletBalance(def.key), np = parseAmount(d.amount);
+      el.textContent = def.name + 'の今の残高：' + sgYen(bp) + (isNaN(np) ? '' : ' → この予定を払うと ' + sgYen(bp - np));
+      return;
+    }
     if (!walletRaw(def.key)) { el.textContent = def.name + 'の残高は、設定で登録すると、ここから自動で引かれます。'; return; }
     var bal = walletBalance(def.key), n = parseAmount(d.amount);
     el.textContent = d.mode === 'edit' ? def.name + 'の今の残高：' + sgYen(bal)
@@ -1508,15 +1525,15 @@
   function walletHomeHtml() {
     var rows = WALLETS.filter(function (d) { return walletRaw(d.key); }).map(function (d) {
       var b = walletBalance(d.key);
-      return '<li class="kv"><span><b>' + d.name + '</b>' + (b < 0 ? '<small class="cmp-sub">マイナスです。実際の残高に合わせてください</small>' : '') + '</span><b' + (b < 0 ? ' style="color:var(--spend)"' : '') + '>' + sgYen(b) + '</b></li>';
+      return '<li class="kv"><span><b>' + d.name + '</b>' + (b < 0 ? '<small class="cmp-sub">マイナスです。実際の残高に合わせてください</small>' : '') + walletPlanLine(d) + '</span><b' + (b < 0 ? ' style="color:var(--spend)"' : '') + '>' + sgYen(b) + '</b></li>';
     }).join('');
     if (!rows) return '';
     return '<div class="card"><div class="sec-head"><h2>お金の残高</h2><span class="sub">記録から自動で計算</span></div><ul class="list">' + rows + '</ul>' +
       '<p class="sub" style="margin:8px 0 0">支払い方法を選んだ記録が、自動で引かれます。チャージや引き出しは設定で足せます。</p></div>';
   }
   function walletCardHtml() {
-    var h = '<div class="card"><div class="sec-head"><h2>お金の残高</h2><span class="sub">現金・PayPay</span></div>' +
-      '<p class="sub" style="margin:0 0 8px">残高を登録すると、そのあとの「使ったお金」で支払い方法が「現金」「PayPay」の記録が、自動で引かれます。</p>';
+    var h = '<div class="card"><div class="sec-head"><h2>お金の残高</h2><span class="sub">現金・PayPay・Suica</span></div>' +
+      '<p class="sub" style="margin:0 0 8px">残高を登録すると、そのあとの「使ったお金」で支払い方法が「現金」「PayPay」「Suica」の記録が、自動で引かれます。</p>';
     WALLETS.forEach(function (d) {
       var w = walletRaw(d.key), b = walletBalance(d.key);
       h += '<div style="border-top:1px dashed var(--line);padding:10px 0"><div class="sec-head" style="margin:0 0 6px"><h3 style="margin:0">' + d.name + '</h3><b' + (b != null && b < 0 ? ' style="color:var(--spend)"' : '') + '>' + (w ? sgYen(b) : '未登録') + '</b></div>';
@@ -1542,7 +1559,7 @@
     var h = '<h2 id="sheetTitle">' + def.name + (isSet ? (reg ? 'の残高を合わせる' : 'の残高を登録') : 'の「入れた・出した」') + '</h2>' +
       '<form id="sheetForm" novalidate style="display:grid;gap:14px">';
     if (isSet) h += '<div class="note b">今の ' + def.name + ' の残高を入れてください。これを土台に、' + jpMD(todayStr()) + 'からあとの「' + def.pay + '」の記録を自動で引きます。' + def.setHint + '</div>';
-    else h += '<div class="note b">' + (def.key === 'paypay' ? 'PayPayにチャージしたときは「入れた」、' : '現金を引き出した・もらったときは「入れた」、') + 'お金を移した・なくしたときは「出した」を選びます。使ったお金の記録は、ここに入れなくて大丈夫です。</div>' +
+    else h += '<div class="note b">' + (def.key === 'paypay' ? 'PayPayにチャージしたときは「入れた」、' : def.key === 'suica' ? 'Suicaにチャージしたときは「入れた」、' : '現金を引き出した・もらったときは「入れた」、') + 'お金を移した・なくしたときは「出した」を選びます。使ったお金の記録は、ここに入れなくて大丈夫です。</div>' +
       '<div class="field"><label for="f-wdir">どちらですか</label><select id="f-wdir" data-field="wdir">' + opt('in', '入れた（残高が増える）', d.wdir) + opt('out', '出した（残高が減る）', d.wdir) + '</select></div>';
     h += '<div class="field"><label for="f-wamount">' + (isSet ? '今の残高（円）' : '金額（円）') + '</label><input id="f-wamount" class="amount-input" data-field="wamount" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="' + esc(d.wamount) + '"' + (e.amount ? ' aria-invalid="true"' : '') + '><div class="err" role="alert">' + esc(e.amount || '') + '</div></div>';
     if (!isSet) h += '<div class="field"><label for="f-wmemo">メモ（なくてもOK）</label><input id="f-wmemo" data-field="wmemo" type="text" maxlength="60" autocomplete="off" placeholder="例：銀行からチャージ" value="' + esc(d.wmemo) + '"></div>';
@@ -1745,7 +1762,7 @@
     var chip = p.status === 'considering' ? '<span class="chip warn">検討中</span>' : '<span class="chip plan">未払い</span>';
     var late = p.date < today ? '<span class="chip over">日付を過ぎています</span>' : '';
     return '<div class="plan-item"><div class="plan-head"><b>' + esc(p.name || p.catName) + '</b>' + yen(p.amount, 'mid') + '</div>' +
-      '<div class="plan-meta">' + chip + '<span>' + (p.dateKind === 'due' ? '支払い期限' : '購入予定日') + ' ' + dlabel(p.date) + '</span><span class="chip">' + esc(p.catName) + '</span>' + (p.fixedId ? '<span class="chip">固定費</span>' : '') + late + '</div>' +
+      '<div class="plan-meta">' + chip + '<span>' + (p.dateKind === 'due' ? '支払い期限' : '購入予定日') + ' ' + dlabel(p.date) + '</span><span class="chip">' + esc(p.catName) + '</span>' + (p.fixedId ? '<span class="chip">固定費</span>' : '') + (p.pay ? '<span class="chip">' + esc(p.pay) + '</span>' : '') + late + '</div>' +
       (p.memo ? '<p class="memo">' + esc(p.memo) + '</p>' : '') +
       '<div class="plan-actions"><button type="button" class="btn ghost small" data-action="edit" data-id="' + p.id + '">編集</button>' +
       '<button type="button" class="btn small" data-action="convert" data-id="' + p.id + '">支払い済みにする</button>' +
@@ -1763,6 +1780,14 @@
       '<span class="amt out cmp-x">' + yen(p.amount) + '</span></button>' +
       '<div class="plan-actions" style="padding:0 0 10px"><button type="button" class="btn ghost small" data-action="restore-plan" data-id="' + p.id + '">予定にもどす</button></div></li>';
   }
+  function walletPlanCardHtml() {
+    var rows = WALLETS.filter(function (d) { return walletRaw(d.key) && walletPlanned(d.key).n; }).map(function (d) {
+      var b = walletBalance(d.key), pl = walletPlanned(d.key), after = b - pl.sum;
+      return '<li class="kv"><span><b>' + d.name + '</b><small class="cmp-sub">今 ' + sgYen(b) + '・予定 ' + pl.n + '件 ' + fmt(pl.sum) + '円</small></span><b' + (after < 0 ? ' style="color:var(--spend)"' : '') + '>' + sgYen(after) + '</b></li>';
+    }).join('');
+    if (!rows) return '';
+    return '<div class="card"><div class="sec-head"><h2>予定を払ったあとの残高</h2></div><ul class="list">' + rows + '</ul><p class="sub" style="margin:8px 0 0">「未払い」の予定だけで計算しています（検討中は入れていません）。</p></div>';
+  }
   function renderPlans() {
     var today = todayStr();
     var open = openPlans().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
@@ -1771,7 +1796,7 @@
     var cp = periodOf(today), thisMonth = stats(cp.y, cp.m).planned, pend = periodRange(cp.y, cp.m).to;
     $('screen-plans').innerHTML =
       '<div class="note b taped"><p class="label">これから払う予定の合計</p><div class="big">' + yen(sumOf(open)) + '</div><div class="sub">うち今の期間の終わり（' + jpMD(pend) + '）までの分 ' + fmt(thisMonth) + '円。使ったお金の合計には入りません。</div></div>' +
-      '<button type="button" class="btn" data-action="add" data-type="plan">＋ 予定を追加する</button>' +
+      '<button type="button" class="btn" data-action="add" data-type="plan">＋ 予定を追加する</button>' + walletPlanCardHtml() +
       (open.length ? '<div class="card">' + open.map(function (p) { return planHtml(p, today); }).join('') + '</div>' : emptyHtml('これから払う予定はありません。')) +
       (paid.length ? '<details class="card"><summary>支払い済み（' + paid.length + '件）</summary><ul class="list">' + paid.map(paidRowHtml).join('') + '</ul></details>' : '') +
       (canc.length ? '<details class="card"><summary>取り消した予定（' + canc.length + '件）</summary><p class="sub" style="margin:0 0 6px">取り消した予定は、どの合計にも入りません。</p><ul class="list">' + canc.map(cancelledRowHtml).join('') + '</ul></details>' : '') +
@@ -2428,7 +2453,7 @@
       '<span class="amt ' + (inc ? 'in' : 'out') + '">' + (inc ? '+' : '') + yen(r.amount) + '</span>' + (r.memo ? '<span class="rmemo">' + esc(r.memo) + '</span>' : '') + '</button></li>';
   }
   function calPlanRowHtml(r) {
-    return '<li><button type="button" class="row plan-row" data-action="edit" data-id="' + r.id + '"><span class="t"><b>' + esc(r.name || r.catName) + '</b><span class="chip ' + (r.status === 'considering' ? 'warn' : 'plan') + '">' + (r.status === 'considering' ? '検討中' : '未払い') + '</span><span class="chip">' + esc(r.catName) + '</span></span>' +
+    return '<li><button type="button" class="row plan-row" data-action="edit" data-id="' + r.id + '"><span class="t"><b>' + esc(r.name || r.catName) + '</b><span class="chip ' + (r.status === 'considering' ? 'warn' : 'plan') + '">' + (r.status === 'considering' ? '検討中' : '未払い') + '</span><span class="chip">' + esc(r.catName) + '</span>' + (r.pay ? '<span class="chip">' + esc(r.pay) + '</span>' : '') + '</span>' +
       '<span class="amt pl">' + yen(r.amount) + '</span>' + (r.memo ? '<span class="rmemo">' + esc(r.memo) + '</span>' : '') + '</button></li>';
   }
   function calPanelHtml() {
@@ -2623,7 +2648,7 @@
     return { mode: 'edit', id: r.id, type: r.type, pay: r.pay || '', amount: String(r.amount), date: r.date, catId: r.catId, catName: r.catName, name: r.name || '', memo: r.memo || '', dateKind: r.dateKind || 'purchase', status: r.status || 'unpaid', fromPlanId: r.fromPlanId, errors: {}, confirmDelete: false };
   }
   function convertDraft(p) {
-    return { mode: 'convert', id: p.id, pay: '', planAmount: p.amount, type: 'expense', amount: String(p.amount), date: todayStr(), catId: p.catId, catName: p.catName, name: p.name || '', memo: p.memo || '', errors: {}, confirmDelete: false };
+    return { mode: 'convert', id: p.id, pay: PAYS.indexOf(p.pay) >= 0 ? p.pay : '', planAmount: p.amount, type: 'expense', amount: String(p.amount), date: todayStr(), catId: p.catId, catName: p.catName, name: p.name || '', memo: p.memo || '', errors: {}, confirmDelete: false };
   }
   function catOptions(d) {
     var kind = kindOf(d.type), found = false;
@@ -2683,7 +2708,7 @@
       h += '<div class="field"><label for="f-cat">カテゴリー</label><select id="f-cat" data-field="catId">' + catOptions(d) + '</select></div>';
       h += '<div class="field"><label for="f-name">名称</label><input id="f-name" data-field="name" type="text" maxlength="60" autocomplete="off" list="name-list" placeholder="' + (d.type === 'income' ? '例：10月分アルバイト' : d.type === 'plan' ? '例：ライブのチケット代' : '例：スーパーで買い出し') + '" value="' + esc(d.name) + '">' + nameListHtml(d.type) + '</div>';
     }
-    if (d.type === 'expense' || conv) h += '<div class="field"><label for="f-pay">支払い方法（なくてもOK）</label><select id="f-pay" data-field="pay"><option value="">選ばない</option>' + PAYS.map(function (p) { return opt(p, p, d.pay); }).join('') + '</select><div id="pay-hint" class="sub" aria-live="polite"></div></div>';
+    if (d.type === 'expense' || d.type === 'plan' || conv) h += '<div class="field"><label for="f-pay">' + (d.type === 'plan' && !conv ? '払う方法の予定（なくてもOK）' : '支払い方法（なくてもOK）') + '</label><select id="f-pay" data-field="pay"><option value="">選ばない</option>' + PAYS.map(function (p) { return opt(p, p, d.pay); }).join('') + '</select><div id="pay-hint" class="sub" aria-live="polite"></div></div>';
     h += '<div class="field"><label for="f-memo">メモ</label><textarea id="f-memo" data-field="memo" maxlength="500" placeholder="あとで見返すメモ（なくてもOK）">' + esc(d.memo) + '</textarea></div>';
     if (isPlan && !conv) {
       if (d.status !== 'paid') h += '<div class="field"><label for="f-status">支払い状況</label><select id="f-status" data-field="status">' +
